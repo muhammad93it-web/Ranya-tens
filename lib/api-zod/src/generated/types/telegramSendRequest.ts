@@ -6,10 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface ExpenseInput {
-  title?: string;
-  type: string;
-  amount: number;
-  notes?: string;
-  date?: string;
+export interface TelegramSendRequest {
+  startDate?: string;
+  endDate?: string;
 }

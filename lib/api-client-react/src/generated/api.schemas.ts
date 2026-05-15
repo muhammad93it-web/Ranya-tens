@@ -160,15 +160,30 @@ export interface SessionInput {
 
 export interface Expense {
   id: number;
+  /** @nullable */
+  title?: string | null;
   type: string;
   amount: number;
+  /** @nullable */
+  notes?: string | null;
   date: string;
 }
 
 export interface ExpenseInput {
+  title?: string;
   type: string;
   amount: number;
+  notes?: string;
   date?: string;
+}
+
+export interface ExpenseType {
+  id: number;
+  label: string;
+}
+
+export interface ExpenseTypeInput {
+  label: string;
 }
 
 export interface ReportSummary {
@@ -191,16 +206,45 @@ export interface Settings {
   systemName: string;
   themeColor: string;
   /** @nullable */
-  telegramApiKey?: string | null;
+  shopName?: string | null;
   /** @nullable */
-  discordWebhookUrl?: string | null;
+  marketCategory?: string | null;
+  /** @nullable */
+  phoneNumber?: string | null;
+  /** @nullable */
+  address?: string | null;
+  fontFamily: string;
+  fontSize: string;
+  /** @nullable */
+  telegramBotToken?: string | null;
+  /** @nullable */
+  telegramChatId?: string | null;
+  telegramDailyEnabled: boolean;
+  telegramMonthlyEnabled: boolean;
+  telegramDailyTimes: string[];
+  cashierPermissions: string[];
 }
 
 export interface SettingsUpdate {
   systemName?: string;
   themeColor?: string;
-  telegramApiKey?: string;
-  discordWebhookUrl?: string;
+  shopName?: string;
+  marketCategory?: string;
+  phoneNumber?: string;
+  address?: string;
+  fontFamily?: string;
+  fontSize?: string;
+  telegramBotToken?: string;
+  telegramChatId?: string;
+  telegramDailyEnabled?: boolean;
+  telegramMonthlyEnabled?: boolean;
+  telegramDailyTimes?: string[];
+  cashierPermissions?: string[];
+}
+
+export interface TelegramSendRequest {
+  startDate?: string;
+  endDate?: string;
 }
 
 export type GetSessionsParams = {

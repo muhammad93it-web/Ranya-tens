@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, sessionsTable, courtsTable, expensesTable } from "@workspace/db";
-import { eq, and, gte, lte, sql } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
@@ -9,9 +9,14 @@ router.get("/reports/summary", requireAuth, async (req, res): Promise<void> => {
   const { date, startDate, endDate } = req.query as Record<string, string | undefined>;
 
   const today = new Date().toISOString().split("T")[0];
-  const filterDate = date ?? today;
-  const filterStart = startDate ?? filterDate;
-  const filterEnd = endDate ?? filterDate;
+  let filterStart = startDate ?? date ?? today;
+  let filterEnd = endDate ?? date ?? today;
+
+  // Cashier can only see today's data, regardless of requested range
+  if (req.session.role === "cashier") {
+    filterStart = today;
+    filterEnd = today;
+  }
 
   const sessionRows = await db
     .select({
@@ -38,7 +43,7 @@ router.get("/reports/summary", requireAuth, async (req, res): Promise<void> => {
         sql`${expensesTable.date} <= ${filterEnd}`,
       ),
     )
-    .orderBy(sql`${expensesTable.date} DESC`);
+    .orderBy(sql`${expensesTable.date} DESC, ${expensesTable.id} DESC`);
 
   const totalIncome = sessionRows.reduce(
     (sum, r) => sum + (r.session.totalCost ? parseFloat(r.session.totalCost) : 0),
@@ -62,8 +67,10 @@ router.get("/reports/summary", requireAuth, async (req, res): Promise<void> => {
 
   const expenses = expenseRows.map((e) => ({
     id: e.id,
+    title: e.title,
     type: e.type,
     amount: parseFloat(e.amount),
+    notes: e.notes,
     date: e.date,
   }));
 

@@ -28,6 +28,8 @@ import type {
   ErrorResponse,
   Expense,
   ExpenseInput,
+  ExpenseType,
+  ExpenseTypeInput,
   GetExpensesParams,
   GetReportSummaryParams,
   GetSessionsParams,
@@ -39,6 +41,7 @@ import type {
   Settings,
   SettingsUpdate,
   SuccessResponse,
+  TelegramSendRequest,
   TimePreset,
   TimePresetInput,
   TimePresetUpdate,
@@ -1317,6 +1320,295 @@ export const useDeleteExpense = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteExpenseMutationOptions(options));
+    }
+
+export const getGetExpenseTypesUrl = () => {
+
+
+
+
+  return `/api/expense-types`
+}
+
+/**
+ * @summary Get all expense types
+ */
+export const getExpenseTypes = async ( options?: RequestInit): Promise<ExpenseType[]> => {
+
+  return customFetch<ExpenseType[]>(getGetExpenseTypesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetExpenseTypesQueryKey = () => {
+    return [
+    `/api/expense-types`
+    ] as const;
+    }
+
+
+export const getGetExpenseTypesQueryOptions = <TData = Awaited<ReturnType<typeof getExpenseTypes>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getExpenseTypes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetExpenseTypesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getExpenseTypes>>> = ({ signal }) => getExpenseTypes({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getExpenseTypes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetExpenseTypesQueryResult = NonNullable<Awaited<ReturnType<typeof getExpenseTypes>>>
+export type GetExpenseTypesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get all expense types
+ */
+
+export function useGetExpenseTypes<TData = Awaited<ReturnType<typeof getExpenseTypes>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getExpenseTypes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetExpenseTypesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateExpenseTypeUrl = () => {
+
+
+
+
+  return `/api/expense-types`
+}
+
+/**
+ * @summary Create an expense type (admin only)
+ */
+export const createExpenseType = async (expenseTypeInput: ExpenseTypeInput, options?: RequestInit): Promise<ExpenseType> => {
+
+  return customFetch<ExpenseType>(getCreateExpenseTypeUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      expenseTypeInput,)
+  }
+);}
+
+
+
+
+export const getCreateExpenseTypeMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createExpenseType>>, TError,{data: BodyType<ExpenseTypeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createExpenseType>>, TError,{data: BodyType<ExpenseTypeInput>}, TContext> => {
+
+const mutationKey = ['createExpenseType'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createExpenseType>>, {data: BodyType<ExpenseTypeInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createExpenseType(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateExpenseTypeMutationResult = NonNullable<Awaited<ReturnType<typeof createExpenseType>>>
+    export type CreateExpenseTypeMutationBody = BodyType<ExpenseTypeInput>
+    export type CreateExpenseTypeMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create an expense type (admin only)
+ */
+export const useCreateExpenseType = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createExpenseType>>, TError,{data: BodyType<ExpenseTypeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createExpenseType>>,
+        TError,
+        {data: BodyType<ExpenseTypeInput>},
+        TContext
+      > => {
+      return useMutation(getCreateExpenseTypeMutationOptions(options));
+    }
+
+export const getDeleteExpenseTypeUrl = (id: number,) => {
+
+
+
+
+  return `/api/expense-types/${id}`
+}
+
+/**
+ * @summary Delete an expense type (admin only)
+ */
+export const deleteExpenseType = async (id: number, options?: RequestInit): Promise<SuccessResponse> => {
+
+  return customFetch<SuccessResponse>(getDeleteExpenseTypeUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteExpenseTypeMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteExpenseType>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteExpenseType>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteExpenseType'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteExpenseType>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteExpenseType(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteExpenseTypeMutationResult = NonNullable<Awaited<ReturnType<typeof deleteExpenseType>>>
+
+    export type DeleteExpenseTypeMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete an expense type (admin only)
+ */
+export const useDeleteExpenseType = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteExpenseType>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteExpenseType>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteExpenseTypeMutationOptions(options));
+    }
+
+export const getSendTelegramReportUrl = () => {
+
+
+
+
+  return `/api/telegram/send-report`
+}
+
+/**
+ * @summary Send a report to Telegram (admin only)
+ */
+export const sendTelegramReport = async (telegramSendRequest: TelegramSendRequest, options?: RequestInit): Promise<SuccessResponse> => {
+
+  return customFetch<SuccessResponse>(getSendTelegramReportUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      telegramSendRequest,)
+  }
+);}
+
+
+
+
+export const getSendTelegramReportMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendTelegramReport>>, TError,{data: BodyType<TelegramSendRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sendTelegramReport>>, TError,{data: BodyType<TelegramSendRequest>}, TContext> => {
+
+const mutationKey = ['sendTelegramReport'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendTelegramReport>>, {data: BodyType<TelegramSendRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  sendTelegramReport(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SendTelegramReportMutationResult = NonNullable<Awaited<ReturnType<typeof sendTelegramReport>>>
+    export type SendTelegramReportMutationBody = BodyType<TelegramSendRequest>
+    export type SendTelegramReportMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Send a report to Telegram (admin only)
+ */
+export const useSendTelegramReport = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendTelegramReport>>, TError,{data: BodyType<TelegramSendRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof sendTelegramReport>>,
+        TError,
+        {data: BodyType<TelegramSendRequest>},
+        TContext
+      > => {
+      return useMutation(getSendTelegramReportMutationOptions(options));
     }
 
 export const getGetUsersUrl = () => {

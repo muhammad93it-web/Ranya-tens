@@ -345,6 +345,76 @@ paths:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
 
+  /expense-types:
+    get:
+      operationId: getExpenseTypes
+      tags: [expenses]
+      summary: Get all expense types
+      responses:
+        "200":
+          description: List of expense types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ExpenseType"
+    post:
+      operationId: createExpenseType
+      tags: [expenses]
+      summary: Create an expense type (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseTypeInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpenseType"
+
+  /expense-types/{id}:
+    delete:
+      operationId: deleteExpenseType
+      tags: [expenses]
+      summary: Delete an expense type (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /telegram/send-report:
+    post:
+      operationId: sendTelegramReport
+      tags: [settings]
+      summary: Send a report to Telegram (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TelegramSendRequest"
+      responses:
+        "200":
+          description: Sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   /users:
     get:
       operationId: getUsers
@@ -748,10 +818,14 @@ components:
       properties:
         id:
           type: integer
+        title:
+          type: ["string", "null"]
         type:
           type: string
         amount:
           type: number
+        notes:
+          type: ["string", "null"]
         date:
           type: string
 
@@ -759,11 +833,31 @@ components:
       type: object
       required: [type, amount]
       properties:
+        title:
+          type: string
         type:
           type: string
         amount:
           type: number
+        notes:
+          type: string
         date:
+          type: string
+
+    ExpenseType:
+      type: object
+      required: [id, label]
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+
+    ExpenseTypeInput:
+      type: object
+      required: [label]
+      properties:
+        label:
           type: string
 
     ReportSummary:
@@ -800,7 +894,7 @@ components:
 
     Settings:
       type: object
-      required: [id, systemName, themeColor]
+      required: [id, systemName, themeColor, fontFamily, fontSize, telegramDailyEnabled, telegramMonthlyEnabled, telegramDailyTimes, cashierPermissions]
       properties:
         id:
           type: integer
@@ -808,10 +902,34 @@ components:
           type: string
         themeColor:
           type: string
-        telegramApiKey:
+        shopName:
           type: ["string", "null"]
-        discordWebhookUrl:
+        marketCategory:
           type: ["string", "null"]
+        phoneNumber:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        fontFamily:
+          type: string
+        fontSize:
+          type: string
+        telegramBotToken:
+          type: ["string", "null"]
+        telegramChatId:
+          type: ["string", "null"]
+        telegramDailyEnabled:
+          type: boolean
+        telegramMonthlyEnabled:
+          type: boolean
+        telegramDailyTimes:
+          type: array
+          items:
+            type: string
+        cashierPermissions:
+          type: array
+          items:
+            type: string
 
     SettingsUpdate:
       type: object
@@ -820,7 +938,39 @@ components:
           type: string
         themeColor:
           type: string
-        telegramApiKey:
+        shopName:
           type: string
-        discordWebhookUrl:
+        marketCategory:
+          type: string
+        phoneNumber:
+          type: string
+        address:
+          type: string
+        fontFamily:
+          type: string
+        fontSize:
+          type: string
+        telegramBotToken:
+          type: string
+        telegramChatId:
+          type: string
+        telegramDailyEnabled:
+          type: boolean
+        telegramMonthlyEnabled:
+          type: boolean
+        telegramDailyTimes:
+          type: array
+          items:
+            type: string
+        cashierPermissions:
+          type: array
+          items:
+            type: string
+
+    TelegramSendRequest:
+      type: object
+      properties:
+        startDate:
+          type: string
+        endDate:
           type: string

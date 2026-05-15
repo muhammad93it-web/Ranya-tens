@@ -11,7 +11,21 @@ export interface Settings {
   systemName: string;
   themeColor: string;
   /** @nullable */
-  telegramApiKey?: string | null;
+  shopName?: string | null;
   /** @nullable */
-  discordWebhookUrl?: string | null;
+  marketCategory?: string | null;
+  /** @nullable */
+  phoneNumber?: string | null;
+  /** @nullable */
+  address?: string | null;
+  fontFamily: string;
+  fontSize: string;
+  /** @nullable */
+  telegramBotToken?: string | null;
+  /** @nullable */
+  telegramChatId?: string | null;
+  telegramDailyEnabled: boolean;
+  telegramMonthlyEnabled: boolean;
+  telegramDailyTimes: string[];
+  cashierPermissions: string[];
 }

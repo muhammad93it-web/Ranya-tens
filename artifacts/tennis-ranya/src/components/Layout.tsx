@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, Link } from "wouter";
 import {
   LayoutGrid,
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useGetSettings, getGetSettingsQueryKey } from "@workspace/api-client-react";
 
 interface NavItem {
   path: string;
@@ -37,26 +38,47 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+interface SettingsForLayout {
+  cashierPermissions?: string[];
+  systemName?: string;
+}
+
 export function Layout({ children }: LayoutProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { user, logout } = useUser();
   const [showLogout, setShowLogout] = useState(false);
 
-  const visibleNavItems = navItems.filter(
-    (item) => !item.adminOnly || user?.role === "admin",
-  );
+  const { data: settings } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
+  const s = settings as SettingsForLayout | undefined;
+  const cashierPermissions = s?.cashierPermissions ?? ["/map", "/dashboard", "/times", "/reports", "/expenses"];
+
+  const visibleNavItems = navItems.filter((item) => {
+    if (user?.role === "admin") return true;
+    if (item.adminOnly) return false;
+    return cashierPermissions.includes(item.path);
+  });
+
+  // Cashier route guard: if a cashier visits a page they aren't allowed to see,
+  // redirect them to the first allowed page.
+  useEffect(() => {
+    if (!settings || !user || user.role !== "cashier") return;
+    const allowed = new Set(cashierPermissions);
+    if (!allowed.has(location)) {
+      const fallback = visibleNavItems[0]?.path ?? "/map";
+      setLocation(fallback);
+    }
+  }, [settings, user, location, cashierPermissions, visibleNavItems, setLocation]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Sidebar — first in DOM = appears on the RIGHT in RTL flex */}
       <aside className="w-56 border-s border-sidebar-border bg-sidebar flex flex-col shrink-0">
-        {/* Logo */}
         <div className="h-14 border-b border-sidebar-border flex items-center justify-center gap-2 px-4">
           <Trophy className="text-primary" size={22} />
-          <span className="font-bold text-sidebar-foreground text-base">Tennis Ranya</span>
+          <span className="font-bold text-sidebar-foreground text-base">
+            {s?.systemName || "Tennis Ranya"}
+          </span>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {visibleNavItems.map((item) => {
             const isActive = location === item.path || (item.path === "/dashboard" && location === "/");
@@ -78,7 +100,6 @@ export function Layout({ children }: LayoutProps) {
           })}
         </nav>
 
-        {/* User info + logout */}
         <div className="p-4 border-t border-sidebar-border">
           <div className="mb-3">
             <p className="text-sidebar-foreground text-sm font-medium">{user?.username}</p>
@@ -97,9 +118,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </aside>
 
-      {/* Main content — second in DOM = appears on the LEFT in RTL flex */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
         <header className="h-14 border-b border-border bg-card flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-3">
             <span className="text-muted-foreground text-sm">
@@ -112,10 +131,11 @@ export function Layout({ children }: LayoutProps) {
           </div>
           <div className="flex items-center gap-2">
             <Trophy className="text-primary" size={20} />
-            <span className="font-bold text-foreground text-lg">Tennis Ranya</span>
+            <span className="font-bold text-foreground text-lg">
+              {s?.systemName || "Tennis Ranya"}
+            </span>
           </div>
         </header>
-        {/* Page content */}
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
 

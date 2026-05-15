@@ -8,7 +8,11 @@
 
 export interface Expense {
   id: number;
+  /** @nullable */
+  title?: string | null;
   type: string;
   amount: number;
+  /** @nullable */
+  notes?: string | null;
   date: string;
 }

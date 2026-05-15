@@ -228,8 +228,10 @@ export const GetExpensesQueryParams = zod.object({
 
 export const GetExpensesResponseItem = zod.object({
   "id": zod.number(),
+  "title": zod.string().nullish(),
   "type": zod.string(),
   "amount": zod.number(),
+  "notes": zod.string().nullish(),
   "date": zod.string()
 })
 export const GetExpensesResponse = zod.array(GetExpensesResponseItem)
@@ -239,8 +241,10 @@ export const GetExpensesResponse = zod.array(GetExpensesResponseItem)
  * @summary Create an expense
  */
 export const CreateExpenseBody = zod.object({
+  "title": zod.string().optional(),
   "type": zod.string(),
   "amount": zod.number(),
+  "notes": zod.string().optional(),
   "date": zod.string().optional()
 })
 
@@ -253,6 +257,49 @@ export const DeleteExpenseParams = zod.object({
 })
 
 export const DeleteExpenseResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary Get all expense types
+ */
+export const GetExpenseTypesResponseItem = zod.object({
+  "id": zod.number(),
+  "label": zod.string()
+})
+export const GetExpenseTypesResponse = zod.array(GetExpenseTypesResponseItem)
+
+
+/**
+ * @summary Create an expense type (admin only)
+ */
+export const CreateExpenseTypeBody = zod.object({
+  "label": zod.string()
+})
+
+
+/**
+ * @summary Delete an expense type (admin only)
+ */
+export const DeleteExpenseTypeParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteExpenseTypeResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary Send a report to Telegram (admin only)
+ */
+export const SendTelegramReportBody = zod.object({
+  "startDate": zod.string().optional(),
+  "endDate": zod.string().optional()
+})
+
+export const SendTelegramReportResponse = zod.object({
   "success": zod.boolean()
 })
 
@@ -335,8 +382,10 @@ export const GetReportSummaryResponse = zod.object({
 })),
   "expenses": zod.array(zod.object({
   "id": zod.number(),
+  "title": zod.string().nullish(),
   "type": zod.string(),
   "amount": zod.number(),
+  "notes": zod.string().nullish(),
   "date": zod.string()
 }))
 })
@@ -411,8 +460,18 @@ export const GetSettingsResponse = zod.object({
   "id": zod.number(),
   "systemName": zod.string(),
   "themeColor": zod.string(),
-  "telegramApiKey": zod.string().nullish(),
-  "discordWebhookUrl": zod.string().nullish()
+  "shopName": zod.string().nullish(),
+  "marketCategory": zod.string().nullish(),
+  "phoneNumber": zod.string().nullish(),
+  "address": zod.string().nullish(),
+  "fontFamily": zod.string(),
+  "fontSize": zod.string(),
+  "telegramBotToken": zod.string().nullish(),
+  "telegramChatId": zod.string().nullish(),
+  "telegramDailyEnabled": zod.boolean(),
+  "telegramMonthlyEnabled": zod.boolean(),
+  "telegramDailyTimes": zod.array(zod.string()),
+  "cashierPermissions": zod.array(zod.string())
 })
 
 
@@ -422,16 +481,36 @@ export const GetSettingsResponse = zod.object({
 export const UpdateSettingsBody = zod.object({
   "systemName": zod.string().optional(),
   "themeColor": zod.string().optional(),
-  "telegramApiKey": zod.string().optional(),
-  "discordWebhookUrl": zod.string().optional()
+  "shopName": zod.string().optional(),
+  "marketCategory": zod.string().optional(),
+  "phoneNumber": zod.string().optional(),
+  "address": zod.string().optional(),
+  "fontFamily": zod.string().optional(),
+  "fontSize": zod.string().optional(),
+  "telegramBotToken": zod.string().optional(),
+  "telegramChatId": zod.string().optional(),
+  "telegramDailyEnabled": zod.boolean().optional(),
+  "telegramMonthlyEnabled": zod.boolean().optional(),
+  "telegramDailyTimes": zod.array(zod.string()).optional(),
+  "cashierPermissions": zod.array(zod.string()).optional()
 })
 
 export const UpdateSettingsResponse = zod.object({
   "id": zod.number(),
   "systemName": zod.string(),
   "themeColor": zod.string(),
-  "telegramApiKey": zod.string().nullish(),
-  "discordWebhookUrl": zod.string().nullish()
+  "shopName": zod.string().nullish(),
+  "marketCategory": zod.string().nullish(),
+  "phoneNumber": zod.string().nullish(),
+  "address": zod.string().nullish(),
+  "fontFamily": zod.string(),
+  "fontSize": zod.string(),
+  "telegramBotToken": zod.string().nullish(),
+  "telegramChatId": zod.string().nullish(),
+  "telegramDailyEnabled": zod.boolean(),
+  "telegramMonthlyEnabled": zod.boolean(),
+  "telegramDailyTimes": zod.array(zod.string()),
+  "cashierPermissions": zod.array(zod.string())
 })
 
 

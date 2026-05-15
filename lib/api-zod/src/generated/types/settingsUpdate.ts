@@ -9,6 +9,16 @@
 export interface SettingsUpdate {
   systemName?: string;
   themeColor?: string;
-  telegramApiKey?: string;
-  discordWebhookUrl?: string;
+  shopName?: string;
+  marketCategory?: string;
+  phoneNumber?: string;
+  address?: string;
+  fontFamily?: string;
+  fontSize?: string;
+  telegramBotToken?: string;
+  telegramChatId?: string;
+  telegramDailyEnabled?: boolean;
+  telegramMonthlyEnabled?: boolean;
+  telegramDailyTimes?: string[];
+  cashierPermissions?: string[];
 }

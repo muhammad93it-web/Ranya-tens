@@ -2,5 +2,6 @@ export * from "./courts";
 export * from "./users";
 export * from "./sessions";
 export * from "./expenses";
+export * from "./expenseTypes";
 export * from "./settings";
 export * from "./timePresets";

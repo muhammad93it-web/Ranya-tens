@@ -46,11 +46,20 @@ interface SettingsForLayout {
   fontFamily?: string;
 }
 
-const FONT_SIZE_PX: Record<string, string> = {
-  small: "14px",
-  medium: "16px",
-  large: "18px",
+const FONT_SIZE_LEGACY: Record<string, string> = {
+  small: "14",
+  medium: "16",
+  large: "18",
 };
+
+function resolveFontSizePx(raw: string | undefined): string {
+  if (!raw) return "16px";
+  const legacy = FONT_SIZE_LEGACY[raw];
+  const num = parseInt(legacy ?? raw, 10);
+  if (Number.isNaN(num)) return "16px";
+  const clamped = Math.max(12, Math.min(50, num));
+  return `${clamped}px`;
+}
 
 const FONT_FAMILY_CSS: Record<string, string> = {
   default: "",
@@ -69,7 +78,7 @@ export function Layout({ children }: LayoutProps) {
   // Apply font size & family globally (rem-scaled so layout remains responsive)
   useEffect(() => {
     const root = document.documentElement;
-    root.style.fontSize = FONT_SIZE_PX[s?.fontSize ?? "medium"] ?? "16px";
+    root.style.fontSize = resolveFontSizePx(s?.fontSize);
     const ff = FONT_FAMILY_CSS[s?.fontFamily ?? "default"];
     if (ff) root.style.fontFamily = ff;
     else root.style.removeProperty("font-family");

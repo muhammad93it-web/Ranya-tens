@@ -89,7 +89,7 @@ export default function DashboardPage() {
     );
   }
 
-  const timeString = now.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const timeString = now.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
   const dateString = now.toLocaleDateString("ku", { year: "numeric", month: "long", day: "numeric" });
 
   return (

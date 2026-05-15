@@ -45,12 +45,16 @@ const FONTS = [
   { value: "serif", label: "Serif" },
 ];
 
-const SIZE_LABELS: Record<string, string> = {
-  small: "بچووک",
-  medium: "مامناوەند (۱۶px)",
-  large: "گەورە",
-};
-const SIZES = ["small", "medium", "large"];
+const SIZE_LEGACY: Record<string, number> = { small: 14, medium: 16, large: 18 };
+const FONT_MIN = 12;
+const FONT_MAX = 50;
+function parseFontSize(raw: string | undefined): number {
+  if (!raw) return 16;
+  const legacy = SIZE_LEGACY[raw];
+  const n = legacy ?? parseInt(raw, 10);
+  if (Number.isNaN(n)) return 16;
+  return Math.max(FONT_MIN, Math.min(FONT_MAX, n));
+}
 
 function Toggle({ on, onChange, testId }: { on: boolean; onChange: (v: boolean) => void; testId?: string }) {
   return (
@@ -270,23 +274,23 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-2">
                   <button type="button" data-testid="button-font-bigger"
                     onClick={() => {
-                      const i = SIZES.indexOf(form.fontSize);
-                      if (i < SIZES.length - 1) patch("fontSize", SIZES[i + 1]);
+                      const n = parseFontSize(form.fontSize);
+                      if (n < FONT_MAX) patch("fontSize", String(n + 1));
                     }}
-                    disabled={SIZES.indexOf(form.fontSize) >= SIZES.length - 1}
+                    disabled={parseFontSize(form.fontSize) >= FONT_MAX}
                     className="w-9 h-9 rounded-lg bg-primary/15 border border-primary/30 text-primary hover:bg-primary/25 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                     <Plus size={16} className="mx-auto" />
                   </button>
-                  <div className="flex-1 px-3.5 py-2.5 rounded-xl bg-muted/30 border border-input text-foreground text-end text-sm flex items-center justify-between">
+                  <div className="flex-1 px-3.5 py-2.5 rounded-xl bg-muted/30 border border-input text-foreground text-end text-sm flex items-center justify-between" dir="ltr">
                     <TypeIcon size={14} className="text-muted-foreground" />
-                    <span>{SIZE_LABELS[form.fontSize] ?? form.fontSize}</span>
+                    <span className="font-mono">{parseFontSize(form.fontSize)}px</span>
                   </div>
                   <button type="button" data-testid="button-font-smaller"
                     onClick={() => {
-                      const i = SIZES.indexOf(form.fontSize);
-                      if (i > 0) patch("fontSize", SIZES[i - 1]);
+                      const n = parseFontSize(form.fontSize);
+                      if (n > FONT_MIN) patch("fontSize", String(n - 1));
                     }}
-                    disabled={SIZES.indexOf(form.fontSize) <= 0}
+                    disabled={parseFontSize(form.fontSize) <= FONT_MIN}
                     className="w-9 h-9 rounded-lg bg-muted/30 border border-input text-foreground hover:bg-muted/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                     <Minus size={16} className="mx-auto" />
                   </button>

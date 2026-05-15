@@ -85,7 +85,7 @@ export default function ReportsPage() {
   function formatDateTime(iso: string) {
     const d = new Date(iso);
     const date = d.toLocaleDateString("en-GB");
-    const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    const time = d.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", hour12: true });
     return `${date} — ${time}`;
   }
 

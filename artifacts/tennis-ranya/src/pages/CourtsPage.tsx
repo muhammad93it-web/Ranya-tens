@@ -27,7 +27,7 @@ export default function CourtsPage() {
     e.preventDefault();
     if (!newName || !newRate) return;
     createCourt.mutate(
-      { data: { name: newName, hourlyRate: Number(newRate) } },
+      { data: { name: newName, hourlyRate: Number(newRate) * 60 } },
       {
         onSuccess: () => {
           setNewName("");
@@ -41,13 +41,13 @@ export default function CourtsPage() {
   function startEdit(court: Court) {
     setEditId(court.id);
     setEditName(court.name);
-    setEditRate(String(court.hourlyRate));
+    setEditRate(String(court.hourlyRate / 60));
   }
 
   function handleUpdate() {
     if (!editId) return;
     updateCourt.mutate(
-      { id: editId, data: { name: editName, hourlyRate: Number(editRate) } },
+      { id: editId, data: { name: editName, hourlyRate: Number(editRate) * 60 } },
       {
         onSuccess: () => {
           setEditId(null);
@@ -161,7 +161,7 @@ export default function CourtsPage() {
                     <input type="number" value={editRate} onChange={(e) => setEditRate(e.target.value)}
                       className="w-24 px-2 py-1 rounded-lg bg-muted/30 border border-input text-foreground text-end focus:outline-none focus:ring-1 focus:ring-primary" />
                   ) : (
-                    <span>{court.hourlyRate} د.ع</span>
+                    <span>{Math.round(court.hourlyRate / 60)} د.ع</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-end text-foreground font-medium">

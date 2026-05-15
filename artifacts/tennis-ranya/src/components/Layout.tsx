@@ -172,6 +172,15 @@ export function Layout({ children }: LayoutProps) {
           </div>
         </header>
         <main className="flex-1 overflow-auto p-6">{children}</main>
+        <footer className="shrink-0 border-t border-border bg-card/40 px-6 py-2 text-center">
+          <p className="text-[11px] text-muted-foreground/70 flex items-center justify-center gap-2 font-medium tracking-wide">
+            <span>0750 126 3713</span>
+            <span className="opacity-40">|</span>
+            <span>SaleBox</span>
+            <span className="opacity-40">|</span>
+            <span>ئەم سیستەمە دروستکراوە لە لایەن</span>
+          </p>
+        </footer>
       </div>
 
       <ConfirmDialog

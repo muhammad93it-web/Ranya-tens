@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation, Link } from "wouter";
 import {
   LayoutGrid,
@@ -12,6 +13,7 @@ import {
   Map,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 interface NavItem {
   path: string;
@@ -38,6 +40,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
   const { user, logout } = useUser();
+  const [showLogout, setShowLogout] = useState(false);
 
   const visibleNavItems = navItems.filter(
     (item) => !item.adminOnly || user?.role === "admin",
@@ -84,7 +87,7 @@ export function Layout({ children }: LayoutProps) {
             </p>
           </div>
           <button
-            onClick={logout}
+            onClick={() => setShowLogout(true)}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
             data-testid="button-logout"
           >
@@ -115,6 +118,21 @@ export function Layout({ children }: LayoutProps) {
         {/* Page content */}
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
+
+      <ConfirmDialog
+        open={showLogout}
+        title="دەرچوون لە سیستەم"
+        message="دڵنیایت دەتەوێت لە سیستەم بچیتە دەرەوە؟"
+        confirmText="بەڵێ، دەرچوون"
+        cancelText="نا، بمێنەوە"
+        variant="warning"
+        icon="logout"
+        onConfirm={() => {
+          setShowLogout(false);
+          logout();
+        }}
+        onCancel={() => setShowLogout(false)}
+      />
     </div>
   );
 }

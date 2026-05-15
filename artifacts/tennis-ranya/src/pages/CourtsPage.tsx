@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useGetCourts, useCreateCourt, useUpdateCourt, useDeleteCourt, getGetCourtsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, Check, X, Table2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { toEnglishDigits } from "@/lib/digits";
 
 interface Court {
   id: number;
@@ -22,6 +24,7 @@ export default function CourtsPage() {
   const [editId, setEditId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [editRate, setEditRate] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<Court | null>(null);
 
   function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -57,10 +60,13 @@ export default function CourtsPage() {
     );
   }
 
-  function handleDelete(id: number) {
-    if (!confirm("دڵنیایت لە سڕینەوەی ئەم میزە؟")) return;
-    deleteCourt.mutate({ id }, {
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetCourtsQueryKey() }),
+  function confirmDelete() {
+    if (!pendingDelete) return;
+    deleteCourt.mutate({ id: pendingDelete.id }, {
+      onSuccess: () => {
+        setPendingDelete(null);
+        queryClient.invalidateQueries({ queryKey: getGetCourtsQueryKey() });
+      },
     });
   }
 
@@ -87,7 +93,7 @@ export default function CourtsPage() {
           <input
             type="number"
             value={newRate}
-            onChange={(e) => setNewRate(e.target.value)}
+            onChange={(e) => setNewRate(toEnglishDigits(e.target.value))}
             placeholder="نرخ خولەک (د.ع)"
             className="flex-1 px-4 py-2.5 rounded-xl bg-muted/30 border border-input text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-end"
             data-testid="input-court-rate"
@@ -141,11 +147,13 @@ export default function CourtsPage() {
                       </>
                     ) : (
                       <>
-                        <button onClick={() => handleDelete(court.id)} className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors" data-testid={`button-delete-court-${court.id}`}>
-                          <Trash2 size={16} />
+                        <button onClick={() => setPendingDelete(court)} className="px-2.5 py-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1.5 text-xs font-medium" data-testid={`button-delete-court-${court.id}`}>
+                          <Trash2 size={14} />
+                          <span>سڕینەوە</span>
                         </button>
-                        <button onClick={() => startEdit(court)} className="p-1.5 rounded-lg text-accent hover:bg-accent/10 transition-colors" data-testid={`button-edit-court-${court.id}`}>
-                          <Pencil size={16} />
+                        <button onClick={() => startEdit(court)} className="px-2.5 py-1.5 rounded-lg text-accent hover:bg-accent/10 transition-colors flex items-center gap-1.5 text-xs font-medium" data-testid={`button-edit-court-${court.id}`}>
+                          <Pencil size={14} />
+                          <span>دەستکاری</span>
                         </button>
                       </>
                     )}
@@ -158,7 +166,7 @@ export default function CourtsPage() {
                 </td>
                 <td className="px-4 py-3 text-end text-foreground">
                   {editId === court.id ? (
-                    <input type="number" value={editRate} onChange={(e) => setEditRate(e.target.value)}
+                    <input type="number" value={editRate} onChange={(e) => setEditRate(toEnglishDigits(e.target.value))}
                       className="w-24 px-2 py-1 rounded-lg bg-muted/30 border border-input text-foreground text-end focus:outline-none focus:ring-1 focus:ring-primary" />
                   ) : (
                     <span>{Math.round(court.hourlyRate / 60)} د.ع</span>
@@ -177,6 +185,19 @@ export default function CourtsPage() {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        title="سڕینەوەی میز"
+        message={`دڵنیایت لە سڕینەوەی میزی "${pendingDelete?.name ?? ""}"؟ ئەم کردارە ناتوانرێت بگەڕێنرێتەوە.`}
+        confirmText="بەڵێ، بسڕەوە"
+        cancelText="پاشگەزبوونەوە"
+        variant="danger"
+        icon="trash"
+        loading={deleteCourt.isPending}
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }

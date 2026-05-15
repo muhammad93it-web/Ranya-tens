@@ -9,6 +9,8 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { Clock, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { toEnglishDigits } from "@/lib/digits";
 
 interface TimePreset {
   id: number;
@@ -33,6 +35,7 @@ export default function TimesPage() {
   const [editId, setEditId] = useState<number | null>(null);
   const [editLabel, setEditLabel] = useState("");
   const [editMinutes, setEditMinutes] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<TimePreset | null>(null);
 
   function refresh() {
     queryClient.invalidateQueries({ queryKey: getGetTimePresetsQueryKey() });
@@ -75,9 +78,14 @@ export default function TimesPage() {
     );
   }
 
-  function handleDelete(id: number) {
-    if (!confirm("دڵنیایت لە سڕینەوەی ئەم کاتە؟")) return;
-    deletePreset.mutate({ id }, { onSuccess: refresh });
+  function confirmDelete() {
+    if (!pendingDelete) return;
+    deletePreset.mutate({ id: pendingDelete.id }, {
+      onSuccess: () => {
+        setPendingDelete(null);
+        refresh();
+      },
+    });
   }
 
   const list = (presets as TimePreset[] ?? []);
@@ -115,7 +123,7 @@ export default function TimesPage() {
                 type="number"
                 min="1"
                 value={newMinutes}
-                onChange={(e) => setNewMinutes(e.target.value)}
+                onChange={(e) => setNewMinutes(toEnglishDigits(e.target.value))}
                 placeholder="خولەک"
                 className="px-3 py-2.5 rounded-xl bg-muted/30 border border-input text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-end"
                 data-testid="input-preset-minutes"
@@ -170,7 +178,7 @@ export default function TimesPage() {
                         type="number"
                         min="1"
                         value={editMinutes}
-                        onChange={(e) => setEditMinutes(e.target.value)}
+                        onChange={(e) => setEditMinutes(toEnglishDigits(e.target.value))}
                         className="w-24 px-2 py-1.5 rounded-lg bg-muted/30 border border-input text-foreground text-end focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                       <input
@@ -185,18 +193,20 @@ export default function TimesPage() {
                       {isAdmin && (
                         <>
                           <button
-                            onClick={() => handleDelete(p.id)}
-                            className="p-2 rounded-lg text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => setPendingDelete(p)}
+                            className="px-2.5 py-1.5 rounded-lg text-destructive/80 hover:text-destructive hover:bg-destructive/10 flex items-center gap-1.5 text-xs font-medium"
                             data-testid={`button-delete-${p.id}`}
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={14} />
+                            <span>سڕینەوە</span>
                           </button>
                           <button
                             onClick={() => startEdit(p)}
-                            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                            className="px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/30 flex items-center gap-1.5 text-xs font-medium"
                             data-testid={`button-edit-${p.id}`}
                           >
-                            <Pencil size={16} />
+                            <Pencil size={14} />
+                            <span>دەستکاری</span>
                           </button>
                         </>
                       )}
@@ -221,6 +231,19 @@ export default function TimesPage() {
           </p>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        title="سڕینەوەی کات"
+        message={`دڵنیایت لە سڕینەوەی کاتی "${pendingDelete?.label ?? ""}" (${pendingDelete?.minutes ?? 0} خولەک)؟`}
+        confirmText="بەڵێ، بسڕەوە"
+        cancelText="پاشگەزبوونەوە"
+        variant="danger"
+        icon="trash"
+        loading={deletePreset.isPending}
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useGetUsers, useCreateUser, useUpdateUser, useDeleteUser, getGetUsersQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Pencil, Check, X, Users } from "lucide-react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { toEnglishDigits } from "@/lib/digits";
 
 interface User {
   id: number;
@@ -23,6 +25,8 @@ export default function UsersPage() {
   const [editId, setEditId] = useState<number | null>(null);
   const [editRole, setEditRole] = useState<"admin" | "cashier">("cashier");
   const [editPassword, setEditPassword] = useState("");
+
+  const [pendingDelete, setPendingDelete] = useState<User | null>(null);
 
   function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -52,9 +56,14 @@ export default function UsersPage() {
     );
   }
 
-  function handleDelete(id: number) {
-    if (!confirm("دڵنیایت لە سڕینەوەی ئەم بەکارهێنەرە؟")) return;
-    deleteUser.mutate({ id }, { onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetUsersQueryKey() }) });
+  function confirmDelete() {
+    if (!pendingDelete) return;
+    deleteUser.mutate({ id: pendingDelete.id }, {
+      onSuccess: () => {
+        setPendingDelete(null);
+        queryClient.invalidateQueries({ queryKey: getGetUsersQueryKey() });
+      },
+    });
   }
 
   return (
@@ -80,7 +89,7 @@ export default function UsersPage() {
             <option value="cashier">کاشێر</option>
             <option value="admin">ئەدمین</option>
           </select>
-          <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+          <input type="password" value={newPassword} onChange={(e) => setNewPassword(toEnglishDigits(e.target.value))}
             placeholder="وشەی نهێنی"
             className="flex-1 min-w-32 px-4 py-2.5 rounded-xl bg-muted/30 border border-input text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors text-end"
             data-testid="input-user-password" />
@@ -125,12 +134,14 @@ export default function UsersPage() {
                       </>
                     ) : (
                       <>
-                        <button onClick={() => handleDelete(user.id)} className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors" data-testid={`button-delete-user-${user.id}`}>
-                          <Trash2 size={16} />
+                        <button onClick={() => setPendingDelete(user)} className="px-2.5 py-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1.5 text-xs font-medium" data-testid={`button-delete-user-${user.id}`}>
+                          <Trash2 size={14} />
+                          <span>سڕینەوە</span>
                         </button>
                         <button onClick={() => { setEditId(user.id); setEditRole(user.role as "admin" | "cashier"); setEditPassword(""); }}
-                          className="p-1.5 rounded-lg text-accent hover:bg-accent/10 transition-colors" data-testid={`button-edit-user-${user.id}`}>
-                          <Pencil size={16} />
+                          className="px-2.5 py-1.5 rounded-lg text-accent hover:bg-accent/10 transition-colors flex items-center gap-1.5 text-xs font-medium" data-testid={`button-edit-user-${user.id}`}>
+                          <Pencil size={14} />
+                          <span>دەستکاری</span>
                         </button>
                       </>
                     )}
@@ -139,7 +150,7 @@ export default function UsersPage() {
                 <td className="px-4 py-3 text-end">
                   {editId === user.id ? (
                     <div className="flex gap-2 justify-end items-center">
-                      <input type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)}
+                      <input type="password" value={editPassword} onChange={(e) => setEditPassword(toEnglishDigits(e.target.value))}
                         placeholder="وشەی نهێنی نوێ"
                         className="w-32 px-2 py-1 rounded-lg bg-muted/30 border border-input text-foreground text-end focus:outline-none focus:ring-1 focus:ring-primary text-sm" />
                       <select value={editRole} onChange={(e) => setEditRole(e.target.value as "admin" | "cashier")}
@@ -160,6 +171,19 @@ export default function UsersPage() {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        title="سڕینەوەی بەکارهێنەر"
+        message={`دڵنیایت لە سڕینەوەی بەکارهێنەر "${pendingDelete?.username ?? ""}"؟ ئەم کردارە ناتوانرێت بگەڕێنرێتەوە.`}
+        confirmText="بەڵێ، بسڕەوە"
+        cancelText="پاشگەزبوونەوە"
+        variant="danger"
+        icon="trash"
+        loading={deleteUser.isPending}
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }

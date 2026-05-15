@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useGetExpenses, useCreateExpense, useDeleteExpense, getGetExpensesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Receipt } from "lucide-react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { toEnglishDigits } from "@/lib/digits";
 
 const EXPENSE_TYPES = [
   "کرێی شوێن", "موچە", "کارەبا", "ئاو", "ئینتەرنێت", "چاکسازی", "تەواوکردن", "تر",
@@ -21,6 +23,7 @@ export default function ExpensesPage() {
   const [type, setType] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(today);
+  const [pendingDelete, setPendingDelete] = useState<Expense | null>(null);
 
   const { data: expenses, isLoading } = useGetExpenses({}, { query: { queryKey: getGetExpensesQueryKey({}) } });
   const createExpense = useCreateExpense();
@@ -42,10 +45,13 @@ export default function ExpensesPage() {
     );
   }
 
-  function handleDelete(id: number) {
-    if (!confirm("دڵنیایت لە سڕینەوەی ئەم خەرجیە؟")) return;
-    deleteExpense.mutate({ id }, {
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetExpensesQueryKey({}) }),
+  function confirmDelete() {
+    if (!pendingDelete) return;
+    deleteExpense.mutate({ id: pendingDelete.id }, {
+      onSuccess: () => {
+        setPendingDelete(null);
+        queryClient.invalidateQueries({ queryKey: getGetExpensesQueryKey({}) });
+      },
     });
   }
 
@@ -81,7 +87,7 @@ export default function ExpensesPage() {
           <input
             type="number"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => setAmount(toEnglishDigits(e.target.value))}
             placeholder="بڕی پارە (د.ع)"
             className="flex-1 min-w-32 px-4 py-2.5 rounded-xl bg-muted/30 border border-input text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors text-end"
             data-testid="input-expense-amount"
@@ -134,8 +140,9 @@ export default function ExpensesPage() {
             ) : (expenses as Expense[] ?? []).map((e) => (
               <tr key={e.id} data-testid={`row-expense-${e.id}`} className="border-b border-border last:border-0 hover:bg-muted/10 transition-colors">
                 <td className="px-4 py-3">
-                  <button onClick={() => handleDelete(e.id)} className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors" data-testid={`button-delete-expense-${e.id}`}>
-                    <Trash2 size={16} />
+                  <button onClick={() => setPendingDelete(e)} className="px-2.5 py-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1.5 text-xs font-medium" data-testid={`button-delete-expense-${e.id}`}>
+                    <Trash2 size={14} />
+                    <span>سڕینەوە</span>
                   </button>
                 </td>
                 <td className="px-4 py-3 text-end text-destructive font-medium">{e.amount.toFixed(0)} د.ع</td>
@@ -146,6 +153,19 @@ export default function ExpensesPage() {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        title="سڕینەوەی خەرجی"
+        message={`دڵنیایت لە سڕینەوەی خەرجی "${pendingDelete?.type ?? ""}" بە بڕی ${pendingDelete?.amount ?? 0} د.ع؟`}
+        confirmText="بەڵێ، بسڕەوە"
+        cancelText="پاشگەزبوونەوە"
+        variant="danger"
+        icon="trash"
+        loading={deleteExpense.isPending}
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }

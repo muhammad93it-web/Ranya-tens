@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useLogin } from "@workspace/api-client-react";
 import { useUser } from "@/contexts/UserContext";
 import { Trophy, Eye, EyeOff } from "lucide-react";
+import { toEnglishDigits } from "@/lib/digits";
 
 type Role = "admin" | "cashier";
 
@@ -117,7 +118,7 @@ export default function LoginPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(toEnglishDigits(e.target.value))}
                   placeholder="••••••"
                   autoFocus
                   className="w-full px-4 py-3 pe-12 rounded-xl bg-muted/30 border border-input text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-center tracking-widest text-lg"

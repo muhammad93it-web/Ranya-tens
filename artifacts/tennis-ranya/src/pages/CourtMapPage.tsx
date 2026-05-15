@@ -10,6 +10,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { X, Play, Square, User, Clock, MapPin } from "lucide-react";
+import { toEnglishDigits } from "@/lib/digits";
 
 interface Court {
   id: number;
@@ -138,7 +139,7 @@ function CourtPanel({ court, presets, onClose, onStart, onEnd, isStarting, isEnd
                   ref={inputRef}
                   type="text"
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onChange={(e) => setCustomerName(toEnglishDigits(e.target.value))}
                   placeholder="ناوی کەسەکە..."
                   className="w-full px-4 py-2.5 rounded-xl bg-muted/30 border border-input text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-end"
                   data-testid="input-customer-name"

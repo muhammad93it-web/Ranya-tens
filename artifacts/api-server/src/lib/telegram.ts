@@ -87,6 +87,22 @@ function baghdadParts(date: Date = new Date()) {
   };
 }
 
+const CATCHUP_WINDOW_MIN = 10;
+
+function nowBaghdadMinutes(): number {
+  const { HH, MM } = baghdadParts();
+  return parseInt(HH, 10) * 60 + parseInt(MM, 10);
+}
+
+function scheduledTimeMinutes(t: string): number | null {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(t);
+  if (!m) return null;
+  const hh = parseInt(m[1]!, 10);
+  const mm = parseInt(m[2]!, 10);
+  if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;
+  return hh * 60 + mm;
+}
+
 function prevMonthRange(yyyy: string, mm: string): { start: string; end: string } {
   const y = parseInt(yyyy, 10);
   const m = parseInt(mm, 10);
@@ -107,32 +123,41 @@ async function tick(): Promise<void> {
   if (!s) return;
   if (!s.telegramBotToken || !s.telegramChatId) return;
 
-  const { yyyy, mm, dd, HH, MM } = baghdadParts();
+  const { yyyy, mm, dd } = baghdadParts();
   const today = `${yyyy}-${mm}-${dd}`;
-  const hhmm = `${HH}:${MM}`;
+  const nowMin = nowBaghdadMinutes();
 
   if (s.telegramDailyEnabled && Array.isArray(s.telegramDailyTimes)) {
-    const normalized = s.telegramDailyTimes.map((t) => {
-      const [h, m] = t.split(":");
-      return `${(h ?? "00").padStart(2, "0")}:${(m ?? "00").padStart(2, "0")}`;
-    });
-    if (normalized.includes(hhmm)) {
-      const marker = `daily|${today}|${hhmm}`;
-      if (!sentMarkers.has(marker)) {
-        sentMarkers.add(marker);
-        const text = await buildReportText(today, today);
-        const r = await sendTelegramMessage(s.telegramBotToken, s.telegramChatId, text);
-        if (r.ok) {
-          logger.info({ marker }, "telegram daily report sent");
-        } else {
-          logger.error({ marker, description: r.description }, "telegram daily report failed");
-          sentMarkers.delete(marker);
-        }
+    for (const raw of s.telegramDailyTimes) {
+      const schedMin = scheduledTimeMinutes(raw);
+      if (schedMin === null) continue;
+      // Fire if current Baghdad time is within [scheduled, scheduled+CATCHUP_WINDOW_MIN)
+      // — handles startup after the exact minute, event-loop drift, and brief stalls.
+      if (nowMin < schedMin || nowMin >= schedMin + CATCHUP_WINDOW_MIN) continue;
+      const [h, m] = raw.split(":");
+      const norm = `${(h ?? "00").padStart(2, "0")}:${(m ?? "00").padStart(2, "0")}`;
+      const marker = `daily|${today}|${norm}`;
+      if (sentMarkers.has(marker)) continue;
+      sentMarkers.add(marker);
+      const text = await buildReportText(today, today);
+      const r = await sendTelegramMessage(s.telegramBotToken, s.telegramChatId, text);
+      if (r.ok) {
+        logger.info({ marker }, "telegram daily report sent");
+      } else {
+        logger.error({ marker, description: r.description }, "telegram daily report failed");
+        sentMarkers.delete(marker);
       }
     }
   }
 
-  if (s.telegramMonthlyEnabled && dd === "01" && hhmm === "00:05") {
+  // Monthly: fire on day 1 within [00:05, 00:05 + CATCHUP_WINDOW_MIN) Baghdad time.
+  const monthlySchedMin = 5;
+  if (
+    s.telegramMonthlyEnabled &&
+    dd === "01" &&
+    nowMin >= monthlySchedMin &&
+    nowMin < monthlySchedMin + CATCHUP_WINDOW_MIN
+  ) {
     const marker = `monthly|${yyyy}-${mm}`;
     if (!sentMarkers.has(marker)) {
       sentMarkers.add(marker);
@@ -148,10 +173,12 @@ async function tick(): Promise<void> {
     }
   }
 
+  // Trim stale markers — keep only today's daily markers and this month's monthly marker.
   if (sentMarkers.size > 200) {
-    const cutoffPrefix = `daily|${today}`;
+    const keepDailyPrefix = `daily|${today}`;
+    const keepMonthly = `monthly|${yyyy}-${mm}`;
     for (const k of sentMarkers) {
-      if (!k.startsWith(cutoffPrefix) && !k.startsWith(`monthly|${yyyy}-${mm}`)) {
+      if (!k.startsWith(keepDailyPrefix) && k !== keepMonthly) {
         sentMarkers.delete(k);
       }
     }
@@ -163,8 +190,11 @@ let started = false;
 export function startTelegramScheduler(): void {
   if (started) return;
   started = true;
+  // Run immediately so a fresh-started server still catches a recently-scheduled time
+  // (within the catch-up window) without waiting 60s.
+  tick().catch((err) => logger.error({ err }, "telegram scheduler initial tick failed"));
   setInterval(() => {
     tick().catch((err) => logger.error({ err }, "telegram scheduler tick failed"));
   }, 60_000);
-  logger.info("telegram scheduler started (60s interval)");
+  logger.info("telegram scheduler started (60s interval, immediate first tick)");
 }

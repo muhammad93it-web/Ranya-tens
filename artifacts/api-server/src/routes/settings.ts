@@ -3,6 +3,7 @@ import { db, settingsTable, sessionsTable, courtsTable, expensesTable } from "@w
 import { eq, and, sql } from "drizzle-orm";
 import { UpdateSettingsBody, SendTelegramReportBody } from "@workspace/api-zod";
 import { requireAuth, requireAdmin } from "../middlewares/auth";
+import { APP_TIMEZONE, todayLocal } from "../lib/date";
 
 const router: IRouter = Router();
 
@@ -68,8 +69,8 @@ async function buildReportText(startDate: string, endDate: string): Promise<stri
     .where(
       and(
         eq(sessionsTable.status, "completed"),
-        sql`DATE(${sessionsTable.startedAt} AT TIME ZONE 'UTC') >= ${startDate}`,
-        sql`DATE(${sessionsTable.startedAt} AT TIME ZONE 'UTC') <= ${endDate}`,
+        sql`DATE(${sessionsTable.startedAt} AT TIME ZONE ${APP_TIMEZONE}) >= ${startDate}`,
+        sql`DATE(${sessionsTable.startedAt} AT TIME ZONE ${APP_TIMEZONE}) <= ${endDate}`,
       ),
     );
 
@@ -116,7 +117,7 @@ router.post("/telegram/send-report", requireAuth, requireAdmin, async (req, res)
     return;
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayLocal();
   const startDate = parsed.data.startDate ?? today;
   const endDate = parsed.data.endDate ?? today;
 

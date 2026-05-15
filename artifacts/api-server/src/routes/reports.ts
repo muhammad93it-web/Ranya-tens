@@ -2,13 +2,14 @@ import { Router, type IRouter } from "express";
 import { db, sessionsTable, courtsTable, expensesTable } from "@workspace/db";
 import { eq, and, sql } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth";
+import { APP_TIMEZONE, todayLocal } from "../lib/date";
 
 const router: IRouter = Router();
 
 router.get("/reports/summary", requireAuth, async (req, res): Promise<void> => {
   const { date, startDate, endDate } = req.query as Record<string, string | undefined>;
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayLocal();
   let filterStart = startDate ?? date ?? today;
   let filterEnd = endDate ?? date ?? today;
 
@@ -28,8 +29,8 @@ router.get("/reports/summary", requireAuth, async (req, res): Promise<void> => {
     .where(
       and(
         eq(sessionsTable.status, "completed"),
-        sql`DATE(${sessionsTable.startedAt} AT TIME ZONE 'UTC') >= ${filterStart}`,
-        sql`DATE(${sessionsTable.startedAt} AT TIME ZONE 'UTC') <= ${filterEnd}`,
+        sql`DATE(${sessionsTable.startedAt} AT TIME ZONE ${APP_TIMEZONE}) >= ${filterStart}`,
+        sql`DATE(${sessionsTable.startedAt} AT TIME ZONE ${APP_TIMEZONE}) <= ${filterEnd}`,
       ),
     )
     .orderBy(sql`${sessionsTable.startedAt} DESC`);
@@ -85,7 +86,7 @@ router.get("/reports/summary", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.get("/reports/dashboard", requireAuth, async (_req, res): Promise<void> => {
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayLocal();
 
   const [activeSessions, todaySessions] = await Promise.all([
     db
@@ -98,7 +99,7 @@ router.get("/reports/dashboard", requireAuth, async (_req, res): Promise<void> =
       .where(
         and(
           eq(sessionsTable.status, "completed"),
-          sql`DATE(${sessionsTable.startedAt} AT TIME ZONE 'UTC') = ${today}`,
+          sql`DATE(${sessionsTable.startedAt} AT TIME ZONE ${APP_TIMEZONE}) = ${today}`,
         ),
       ),
   ]);

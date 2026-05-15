@@ -8,6 +8,7 @@ import {
   DeleteExpenseTypeParams,
 } from "@workspace/api-zod";
 import { requireAuth, requireAdmin } from "../middlewares/auth";
+import { todayLocal } from "../lib/date";
 
 const router: IRouter = Router();
 
@@ -38,7 +39,7 @@ router.post("/expenses", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayLocal();
 
   const [expense] = await db
     .insert(expensesTable)

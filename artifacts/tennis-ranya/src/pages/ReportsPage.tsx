@@ -24,12 +24,26 @@ interface Expense {
 
 type Preset = "daily" | "weekly" | "monthly" | "previous" | "custom";
 
+function localToday(): { yyyy: number; mm: number; dd: number } {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Baghdad",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date());
+  return {
+    yyyy: parseInt(parts.find((p) => p.type === "year")!.value, 10),
+    mm: parseInt(parts.find((p) => p.type === "month")!.value, 10) - 1,
+    dd: parseInt(parts.find((p) => p.type === "day")!.value, 10),
+  };
+}
+
 function computeRange(preset: Preset): { start: string; end: string } {
-  const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm = now.getMonth();
-  const dd = now.getDate();
-  const iso = (d: Date) => d.toISOString().split("T")[0];
+  const { yyyy, mm, dd } = localToday();
+  const iso = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
 
   if (preset === "daily") {
     const today = iso(new Date(yyyy, mm, dd));

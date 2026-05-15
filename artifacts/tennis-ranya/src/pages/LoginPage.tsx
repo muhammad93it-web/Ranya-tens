@@ -8,7 +8,6 @@ type Role = "admin" | "cashier";
 
 export default function LoginPage() {
   const [role, setRole] = useState<Role>("admin");
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -19,6 +18,7 @@ export default function LoginPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    const username = role === "admin" ? "admin" : "cashier";
     loginMutation.mutate(
       { data: { username, password, role } },
       {
@@ -27,33 +27,39 @@ export default function LoginPage() {
           setLocation("/dashboard");
         },
         onError: () => {
-          setError("ناوی بەکارهێنەر یان وشەی نهێنی هەڵەیە");
+          setError("وشەی نهێنی هەڵەیە");
         },
       },
     );
   }
 
+  function handleRoleChange(newRole: Role) {
+    setRole(newRole);
+    setPassword("");
+    setError("");
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-2">
             <Trophy className="text-primary" size={36} />
             <h1 className="text-3xl font-bold text-foreground">Tennis Ranya</h1>
           </div>
-          <p className="text-muted-foreground text-sm">چوونەژووەروەوە بۆ سیستەمەکە</p>
+          <p className="text-muted-foreground text-sm">جۆری لەکاونت هەڵبژێرە و پاسۆرد داخڵ بکە</p>
         </div>
 
         {/* Card */}
         <div className="bg-card border border-card-border rounded-2xl p-8 shadow-xl">
+
           {/* Role selector */}
           <div className="mb-6">
-            <p className="text-muted-foreground text-sm text-end mb-3">جۆری لەکاونت</p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setRole("cashier")}
+                onClick={() => handleRoleChange("cashier")}
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
                   role === "cashier"
                     ? "border-amber-500 bg-amber-500/10"
@@ -76,7 +82,7 @@ export default function LoginPage() {
 
               <button
                 type="button"
-                onClick={() => setRole("admin")}
+                onClick={() => handleRoleChange("admin")}
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
                   role === "admin"
                     ? "border-primary bg-primary/10"
@@ -100,27 +106,22 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Password only */}
             <div>
-              <label className="block text-sm text-muted-foreground text-end mb-1">بەکارهێنەر</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="بەڕێوەبەر"
-                className="w-full px-4 py-3 rounded-xl bg-muted/30 border border-input text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-end"
-                data-testid="input-username"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-muted-foreground text-end mb-1">پاسۆرد</label>
+              <label className="block text-sm text-muted-foreground text-end mb-1">
+                پاسۆردی{" "}
+                <span className={role === "admin" ? "text-primary font-semibold" : "text-amber-400 font-semibold"}>
+                  {role === "admin" ? "ئەدمین" : "کاشێر"}
+                </span>
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pe-12 rounded-xl bg-muted/30 border border-input text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                  placeholder="••••••"
+                  autoFocus
+                  className="w-full px-4 py-3 pe-12 rounded-xl bg-muted/30 border border-input text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-center tracking-widest text-lg"
                   data-testid="input-password"
                   required
                 />
@@ -143,7 +144,11 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loginMutation.isPending}
-              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-base hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+              className={`w-full py-3 rounded-xl font-semibold text-base hover:opacity-90 active:opacity-80 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 ${
+                role === "admin"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-amber-500 text-white"
+              }`}
               data-testid="button-login"
             >
               {loginMutation.isPending ? (

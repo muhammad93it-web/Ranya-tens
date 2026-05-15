@@ -58,6 +58,7 @@ export interface User {
   id: number;
   username: string;
   role: UserRole;
+  permissions: string[];
 }
 
 export interface AuthResult {
@@ -76,6 +77,7 @@ export interface UserInput {
   username: string;
   password: string;
   role: UserInputRole;
+  permissions?: string[];
 }
 
 export type UserUpdateRole = typeof UserUpdateRole[keyof typeof UserUpdateRole];
@@ -89,6 +91,7 @@ export const UserUpdateRole = {
 export interface UserUpdate {
   password?: string;
   role?: UserUpdateRole;
+  permissions?: string[];
 }
 
 export type CourtStatus = typeof CourtStatus[keyof typeof CourtStatus];
@@ -222,7 +225,6 @@ export interface Settings {
   telegramDailyEnabled: boolean;
   telegramMonthlyEnabled: boolean;
   telegramDailyTimes: string[];
-  cashierPermissions: string[];
 }
 
 export interface SettingsUpdate {
@@ -239,7 +241,6 @@ export interface SettingsUpdate {
   telegramDailyEnabled?: boolean;
   telegramMonthlyEnabled?: boolean;
   telegramDailyTimes?: string[];
-  cashierPermissions?: string[];
 }
 
 export interface TelegramSendRequest {

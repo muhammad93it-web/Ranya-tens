@@ -29,7 +29,8 @@ export const LoginResponse = zod.object({
   "user": zod.object({
   "id": zod.number(),
   "username": zod.string(),
-  "role": zod.enum(['admin', 'cashier'])
+  "role": zod.enum(['admin', 'cashier']),
+  "permissions": zod.array(zod.string())
 })
 })
 
@@ -48,7 +49,8 @@ export const LogoutResponse = zod.object({
 export const GetMeResponse = zod.object({
   "id": zod.number(),
   "username": zod.string(),
-  "role": zod.enum(['admin', 'cashier'])
+  "role": zod.enum(['admin', 'cashier']),
+  "permissions": zod.array(zod.string())
 })
 
 
@@ -310,7 +312,8 @@ export const SendTelegramReportResponse = zod.object({
 export const GetUsersResponseItem = zod.object({
   "id": zod.number(),
   "username": zod.string(),
-  "role": zod.enum(['admin', 'cashier'])
+  "role": zod.enum(['admin', 'cashier']),
+  "permissions": zod.array(zod.string())
 })
 export const GetUsersResponse = zod.array(GetUsersResponseItem)
 
@@ -321,7 +324,8 @@ export const GetUsersResponse = zod.array(GetUsersResponseItem)
 export const CreateUserBody = zod.object({
   "username": zod.string(),
   "password": zod.string(),
-  "role": zod.enum(['admin', 'cashier'])
+  "role": zod.enum(['admin', 'cashier']),
+  "permissions": zod.array(zod.string()).optional()
 })
 
 
@@ -334,13 +338,15 @@ export const UpdateUserParams = zod.object({
 
 export const UpdateUserBody = zod.object({
   "password": zod.string().optional(),
-  "role": zod.enum(['admin', 'cashier']).optional()
+  "role": zod.enum(['admin', 'cashier']).optional(),
+  "permissions": zod.array(zod.string()).optional()
 })
 
 export const UpdateUserResponse = zod.object({
   "id": zod.number(),
   "username": zod.string(),
-  "role": zod.enum(['admin', 'cashier'])
+  "role": zod.enum(['admin', 'cashier']),
+  "permissions": zod.array(zod.string())
 })
 
 
@@ -470,8 +476,7 @@ export const GetSettingsResponse = zod.object({
   "telegramChatId": zod.string().nullish(),
   "telegramDailyEnabled": zod.boolean(),
   "telegramMonthlyEnabled": zod.boolean(),
-  "telegramDailyTimes": zod.array(zod.string()),
-  "cashierPermissions": zod.array(zod.string())
+  "telegramDailyTimes": zod.array(zod.string())
 })
 
 
@@ -491,8 +496,7 @@ export const UpdateSettingsBody = zod.object({
   "telegramChatId": zod.string().optional(),
   "telegramDailyEnabled": zod.boolean().optional(),
   "telegramMonthlyEnabled": zod.boolean().optional(),
-  "telegramDailyTimes": zod.array(zod.string()).optional(),
-  "cashierPermissions": zod.array(zod.string()).optional()
+  "telegramDailyTimes": zod.array(zod.string()).optional()
 })
 
 export const UpdateSettingsResponse = zod.object({
@@ -509,8 +513,7 @@ export const UpdateSettingsResponse = zod.object({
   "telegramChatId": zod.string().nullish(),
   "telegramDailyEnabled": zod.boolean(),
   "telegramMonthlyEnabled": zod.boolean(),
-  "telegramDailyTimes": zod.array(zod.string()),
-  "cashierPermissions": zod.array(zod.string())
+  "telegramDailyTimes": zod.array(zod.string())
 })
 
 

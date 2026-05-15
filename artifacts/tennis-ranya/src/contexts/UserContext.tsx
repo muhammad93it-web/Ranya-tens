@@ -8,6 +8,7 @@ export interface AuthUser {
   id: number;
   username: string;
   role: UserRole;
+  permissions: string[];
 }
 
 interface UserContextType {

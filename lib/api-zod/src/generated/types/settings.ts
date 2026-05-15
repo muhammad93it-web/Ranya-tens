@@ -27,5 +27,4 @@ export interface Settings {
   telegramDailyEnabled: boolean;
   telegramMonthlyEnabled: boolean;
   telegramDailyTimes: string[];
-  cashierPermissions: string[];
 }

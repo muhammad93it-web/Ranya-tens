@@ -46,6 +46,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
       id: user.id,
       username: user.username,
       role: user.role,
+      permissions: user.permissions ?? [],
     },
   });
 });
@@ -77,6 +78,7 @@ router.get("/auth/me", async (req, res): Promise<void> => {
     id: user.id,
     username: user.username,
     role: user.role,
+    permissions: user.permissions ?? [],
   });
 });
 

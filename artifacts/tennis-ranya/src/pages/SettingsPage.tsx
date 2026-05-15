@@ -8,7 +8,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Settings as SettingsIcon, Save, Store, Palette, Send, Plus, X,
-  Trash2, Type as TypeIcon, Shield,
+  Type as TypeIcon,
 } from "lucide-react";
 import { toEnglishDigits } from "@/lib/digits";
 
@@ -27,7 +27,6 @@ interface SettingsData {
   telegramDailyEnabled: boolean;
   telegramMonthlyEnabled: boolean;
   telegramDailyTimes: string[];
-  cashierPermissions: string[];
 }
 
 const COLORS = [
@@ -52,14 +51,6 @@ const SIZE_LABELS: Record<string, string> = {
   large: "گەورە",
 };
 const SIZES = ["small", "medium", "large"];
-
-const CASHIER_PAGES = [
-  { path: "/map", label: "نەخشەی مێزەکان" },
-  { path: "/dashboard", label: "داشبۆرد" },
-  { path: "/times", label: "کاتەکان" },
-  { path: "/reports", label: "ڕاپۆرتەکان" },
-  { path: "/expenses", label: "خەرجییەکان" },
-];
 
 function Toggle({ on, onChange, testId }: { on: boolean; onChange: (v: boolean) => void; testId?: string }) {
   return (
@@ -112,7 +103,6 @@ export default function SettingsPage() {
         telegramDailyEnabled: form.telegramDailyEnabled,
         telegramMonthlyEnabled: form.telegramMonthlyEnabled,
         telegramDailyTimes: form.telegramDailyTimes,
-        cashierPermissions: form.cashierPermissions,
       },
     }, {
       onSuccess: () => {
@@ -133,13 +123,6 @@ export default function SettingsPage() {
   function removeTime(t: string) {
     if (!form) return;
     patch("telegramDailyTimes", form.telegramDailyTimes.filter((x) => x !== t));
-  }
-
-  function togglePermission(path: string) {
-    if (!form) return;
-    const has = form.cashierPermissions.includes(path);
-    patch("cashierPermissions",
-      has ? form.cashierPermissions.filter((p) => p !== path) : [...form.cashierPermissions, path]);
   }
 
   function sendNow() {
@@ -406,27 +389,6 @@ export default function SettingsPage() {
           )}
         </section>
 
-        {/* Cashier permissions */}
-        <section className="bg-card border border-card-border rounded-2xl p-6">
-          <h2 className="text-sm font-semibold text-foreground text-end mb-2 flex items-center justify-end gap-2 border-b border-border pb-3">
-            <span>دەسەڵاتەکانی کاشێر</span>
-            <Shield size={16} className="text-primary" />
-          </h2>
-          <p className="text-xs text-muted-foreground text-end mb-4">دیاری بکە کام بەش بۆ کاشێر دەردەکەوێت و دەتوانێت ئیشی پێ بکات</p>
-          <div className="space-y-2">
-            {CASHIER_PAGES.map((p) => {
-              const checked = form.cashierPermissions.includes(p.path);
-              return (
-                <label key={p.path} className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border cursor-pointer hover:bg-muted/30 transition-colors">
-                  <input type="checkbox" checked={checked} onChange={() => togglePermission(p.path)}
-                    className="w-5 h-5 rounded accent-primary cursor-pointer"
-                    data-testid={`permission-${p.path.replace("/", "")}`} />
-                  <span className="text-foreground text-end">{p.label}</span>
-                </label>
-              );
-            })}
-          </div>
-        </section>
       </div>
     </div>
   );

@@ -12,11 +12,14 @@ import { requireAuth, requireAdmin } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
+const DEFAULT_PERMISSIONS = ["/map", "/dashboard", "/times", "/reports", "/expenses"];
+
 function formatUser(u: typeof usersTable.$inferSelect) {
   return {
     id: u.id,
     username: u.username,
     role: u.role,
+    permissions: u.permissions ?? DEFAULT_PERMISSIONS,
   };
 }
 
@@ -40,6 +43,7 @@ router.post("/users", requireAuth, requireAdmin, async (req, res): Promise<void>
       username: parsed.data.username,
       passwordHash,
       role: parsed.data.role,
+      permissions: parsed.data.permissions ?? DEFAULT_PERMISSIONS,
     })
     .returning();
 
@@ -59,10 +63,13 @@ router.patch("/users/:id", requireAuth, requireAdmin, async (req, res): Promise<
     return;
   }
 
-  const updateData: Record<string, string> = {};
+  const updateData: Record<string, unknown> = {};
   if (parsed.data.role !== undefined) updateData.role = parsed.data.role;
   if (parsed.data.password !== undefined) {
     updateData.passwordHash = await bcrypt.hash(parsed.data.password, 10);
+  }
+  if (parsed.data.permissions !== undefined) {
+    updateData.permissions = parsed.data.permissions;
   }
 
   const [user] = await db

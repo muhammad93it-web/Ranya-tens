@@ -16,6 +16,8 @@ import { useUser } from "@/contexts/UserContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useGetSettings, getGetSettingsQueryKey } from "@workspace/api-client-react";
 
+const DEFAULT_PERMISSIONS = ["/map", "/dashboard", "/times", "/reports", "/expenses"];
+
 interface NavItem {
   path: string;
   label: string;
@@ -39,7 +41,6 @@ interface LayoutProps {
 }
 
 interface SettingsForLayout {
-  cashierPermissions?: string[];
   systemName?: string;
 }
 
@@ -50,24 +51,26 @@ export function Layout({ children }: LayoutProps) {
 
   const { data: settings } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
   const s = settings as SettingsForLayout | undefined;
-  const cashierPermissions = s?.cashierPermissions ?? ["/map", "/dashboard", "/times", "/reports", "/expenses"];
+
+  // Per-user permissions (cashiers only — admins always see everything)
+  const userPermissions = user?.permissions ?? DEFAULT_PERMISSIONS;
 
   const visibleNavItems = navItems.filter((item) => {
     if (user?.role === "admin") return true;
     if (item.adminOnly) return false;
-    return cashierPermissions.includes(item.path);
+    return userPermissions.includes(item.path);
   });
 
   // Cashier route guard: if a cashier visits a page they aren't allowed to see,
   // redirect them to the first allowed page.
   useEffect(() => {
-    if (!settings || !user || user.role !== "cashier") return;
-    const allowed = new Set(cashierPermissions);
+    if (!user || user.role !== "cashier") return;
+    const allowed = new Set(userPermissions);
     if (!allowed.has(location)) {
       const fallback = visibleNavItems[0]?.path ?? "/map";
-      setLocation(fallback);
+      if (location !== fallback) setLocation(fallback);
     }
-  }, [settings, user, location, cashierPermissions, visibleNavItems, setLocation]);
+  }, [user, location, userPermissions, visibleNavItems, setLocation]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">

@@ -10,4 +10,5 @@ import type { UserUpdateRole } from './userUpdateRole';
 export interface UserUpdate {
   password?: string;
   role?: UserUpdateRole;
+  permissions?: string[];
 }

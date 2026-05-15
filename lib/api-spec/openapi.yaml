@@ -705,7 +705,7 @@ components:
 
     User:
       type: object
-      required: [id, username, role]
+      required: [id, username, role, permissions]
       properties:
         id:
           type: integer
@@ -714,6 +714,10 @@ components:
         role:
           type: string
           enum: [admin, cashier]
+        permissions:
+          type: array
+          items:
+            type: string
 
     UserInput:
       type: object
@@ -726,6 +730,10 @@ components:
         role:
           type: string
           enum: [admin, cashier]
+        permissions:
+          type: array
+          items:
+            type: string
 
     UserUpdate:
       type: object
@@ -735,6 +743,10 @@ components:
         role:
           type: string
           enum: [admin, cashier]
+        permissions:
+          type: array
+          items:
+            type: string
 
     Court:
       type: object
@@ -894,7 +906,7 @@ components:
 
     Settings:
       type: object
-      required: [id, systemName, themeColor, fontFamily, fontSize, telegramDailyEnabled, telegramMonthlyEnabled, telegramDailyTimes, cashierPermissions]
+      required: [id, systemName, themeColor, fontFamily, fontSize, telegramDailyEnabled, telegramMonthlyEnabled, telegramDailyTimes]
       properties:
         id:
           type: integer
@@ -923,10 +935,6 @@ components:
         telegramMonthlyEnabled:
           type: boolean
         telegramDailyTimes:
-          type: array
-          items:
-            type: string
-        cashierPermissions:
           type: array
           items:
             type: string
@@ -959,10 +967,6 @@ components:
         telegramMonthlyEnabled:
           type: boolean
         telegramDailyTimes:
-          type: array
-          items:
-            type: string
-        cashierPermissions:
           type: array
           items:
             type: string

@@ -20,11 +20,6 @@ export const settingsTable = pgTable("settings", {
   telegramDailyEnabled: boolean("telegram_daily_enabled").notNull().default(false),
   telegramMonthlyEnabled: boolean("telegram_monthly_enabled").notNull().default(false),
   telegramDailyTimes: jsonb("telegram_daily_times").$type<string[]>().notNull().default([]),
-
-  cashierPermissions: jsonb("cashier_permissions")
-    .$type<string[]>()
-    .notNull()
-    .default(["/map", "/dashboard", "/times", "/reports", "/expenses"]),
 });
 
 export const insertSettingsSchema = createInsertSchema(settingsTable).omit({ id: true });

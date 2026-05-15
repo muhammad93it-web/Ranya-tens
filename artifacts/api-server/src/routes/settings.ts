@@ -32,7 +32,6 @@ function formatSettings(s: SettingsRow, isAdmin: boolean) {
     telegramDailyEnabled: s.telegramDailyEnabled,
     telegramMonthlyEnabled: s.telegramMonthlyEnabled,
     telegramDailyTimes: s.telegramDailyTimes ?? [],
-    cashierPermissions: s.cashierPermissions ?? [],
   };
 }
 

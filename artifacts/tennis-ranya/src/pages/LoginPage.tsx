@@ -23,7 +23,7 @@ export default function LoginPage() {
       { data: { password, role } },
       {
         onSuccess: (data) => {
-          setUser(data.user as { id: number; username: string; role: "admin" | "cashier" });
+          setUser(data.user as { id: number; username: string; role: "admin" | "cashier"; permissions: string[] });
           setLocation("/map");
         },
         onError: () => {

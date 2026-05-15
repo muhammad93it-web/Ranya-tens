@@ -43,30 +43,8 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="h-14 border-b border-border bg-card flex items-center justify-between px-6 shrink-0">
-          <div className="flex items-center gap-3">
-            <span className="text-muted-foreground text-sm">
-              {new Date().toLocaleDateString("ku", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Trophy className="text-primary" size={20} />
-            <span className="font-bold text-foreground text-lg">Tennis Ranya</span>
-          </div>
-        </header>
-        {/* Page content */}
-        <main className="flex-1 overflow-auto p-6">{children}</main>
-      </div>
-
-      {/* Right sidebar */}
-      <aside className="w-56 border-r border-sidebar-border bg-sidebar flex flex-col shrink-0" style={{ borderRight: "none", borderLeft: "1px solid hsl(var(--sidebar-border))" }}>
+      {/* Sidebar — first in DOM = appears on the RIGHT in RTL flex */}
+      <aside className="w-56 border-s border-sidebar-border bg-sidebar flex flex-col shrink-0">
         {/* Logo */}
         <div className="h-14 border-b border-sidebar-border flex items-center justify-center gap-2 px-4">
           <Trophy className="text-primary" size={22} />
@@ -113,6 +91,28 @@ export function Layout({ children }: LayoutProps) {
           </button>
         </div>
       </aside>
+
+      {/* Main content — second in DOM = appears on the LEFT in RTL flex */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <header className="h-14 border-b border-border bg-card flex items-center justify-between px-6 shrink-0">
+          <div className="flex items-center gap-3">
+            <span className="text-muted-foreground text-sm">
+              {new Date().toLocaleDateString("ku", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Trophy className="text-primary" size={20} />
+            <span className="font-bold text-foreground text-lg">Tennis Ranya</span>
+          </div>
+        </header>
+        {/* Page content */}
+        <main className="flex-1 overflow-auto p-6">{children}</main>
+      </div>
     </div>
   );
 }

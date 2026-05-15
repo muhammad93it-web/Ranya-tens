@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useGetCourts, useGetDashboardStats, useCreateSession, useEndSession, getGetCourtsQueryKey, getGetDashboardStatsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Play, Square, Trophy, Clock } from "lucide-react";
+import { EndSessionConfirm } from "@/components/EndSessionConfirm";
 
 interface Court {
   id: number;
@@ -9,6 +10,7 @@ interface Court {
   hourlyRate: number;
   status: string;
   activeSessionId: number | null;
+  activeSessionCustomerName?: string | null;
   activeSessionStartedAt: string | null;
   activeSessionElapsedMinutes: number | null;
   activeSessionCurrentCost: number | null;
@@ -59,6 +61,8 @@ export default function DashboardPage() {
   const createSession = useCreateSession();
   const endSession = useEndSession();
 
+  const [pendingEnd, setPendingEnd] = useState<Court | null>(null);
+
   const [now, setNow] = useState(new Date());
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 1000);
@@ -77,11 +81,13 @@ export default function DashboardPage() {
     );
   }
 
-  function handleEnd(sessionId: number) {
+  function confirmEnd() {
+    if (!pendingEnd?.activeSessionId) return;
     endSession.mutate(
-      { id: sessionId },
+      { id: pendingEnd.activeSessionId },
       {
         onSuccess: () => {
+          setPendingEnd(null);
           queryClient.invalidateQueries({ queryKey: getGetCourtsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetDashboardStatsQueryKey() });
         },
@@ -208,7 +214,7 @@ export default function DashboardPage() {
               {/* Action button */}
               {court.status === "active" && court.activeSessionId ? (
                 <button
-                  onClick={() => handleEnd(court.activeSessionId!)}
+                  onClick={() => setPendingEnd(court)}
                   disabled={endSession.isPending}
                   className="w-full py-2 rounded-lg bg-destructive/20 text-destructive border border-destructive/30 hover:bg-destructive/30 transition-colors text-sm font-medium flex items-center justify-center gap-1"
                   data-testid={`button-end-${court.id}`}
@@ -231,6 +237,17 @@ export default function DashboardPage() {
           ))}
         </div>
       )}
+
+      <EndSessionConfirm
+        open={!!pendingEnd && !!pendingEnd.activeSessionStartedAt}
+        courtName={pendingEnd?.name ?? ""}
+        customerName={pendingEnd?.activeSessionCustomerName ?? null}
+        startedAt={pendingEnd?.activeSessionStartedAt ?? new Date().toISOString()}
+        hourlyRate={pendingEnd?.hourlyRate ?? 0}
+        loading={endSession.isPending}
+        onConfirm={confirmEnd}
+        onCancel={() => setPendingEnd(null)}
+      />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { X, Play, Square, User, Clock, MapPin } from "lucide-react";
 import { toEnglishDigits } from "@/lib/digits";
+import { EndSessionConfirm } from "@/components/EndSessionConfirm";
 
 interface Court {
   id: number;
@@ -61,12 +62,11 @@ interface PanelProps {
   presets: TimePreset[];
   onClose: () => void;
   onStart: (courtId: number, customerName: string, presetMinutes: number | null) => void;
-  onEnd: (sessionId: number) => void;
+  onEnd: (court: Court) => void;
   isStarting: boolean;
-  isEnding: boolean;
 }
 
-function CourtPanel({ court, presets, onClose, onStart, onEnd, isStarting, isEnding }: PanelProps) {
+function CourtPanel({ court, presets, onClose, onStart, onEnd, isStarting }: PanelProps) {
   const [customerName, setCustomerName] = useState("");
   const [presetMinutes, setPresetMinutes] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -117,9 +117,8 @@ function CourtPanel({ court, presets, onClose, onStart, onEnd, isStarting, isEnd
                 )}
               </div>
               <button
-                onClick={() => court.activeSessionId && onEnd(court.activeSessionId)}
-                disabled={isEnding}
-                className="w-full py-3 rounded-xl bg-destructive/20 text-destructive border border-destructive/40 hover:bg-destructive/30 transition-all font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+                onClick={() => onEnd(court)}
+                className="w-full py-3 rounded-xl bg-destructive/20 text-destructive border border-destructive/40 hover:bg-destructive/30 transition-all font-semibold flex items-center justify-center gap-2"
                 data-testid={`panel-end-${court.id}`}
               >
                 <Square size={16} />
@@ -281,6 +280,7 @@ export default function CourtMapPage() {
   const presets = (presetsData as TimePreset[] ?? []);
 
   const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
+  const [pendingEnd, setPendingEnd] = useState<Court | null>(null);
 
   function handleStart(courtId: number, customerName: string, presetMinutes: number | null) {
     createSession.mutate(
@@ -295,12 +295,18 @@ export default function CourtMapPage() {
     );
   }
 
-  function handleEnd(sessionId: number) {
+  function requestEnd(court: Court) {
+    setSelectedCourt(null);
+    setPendingEnd(court);
+  }
+
+  function confirmEnd() {
+    if (!pendingEnd?.activeSessionId) return;
     endSession.mutate(
-      { id: sessionId },
+      { id: pendingEnd.activeSessionId },
       {
         onSuccess: () => {
-          setSelectedCourt(null);
+          setPendingEnd(null);
           queryClient.invalidateQueries({ queryKey: getGetCourtsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetDashboardStatsQueryKey() });
         },
@@ -358,11 +364,21 @@ export default function CourtMapPage() {
           presets={presets}
           onClose={() => setSelectedCourt(null)}
           onStart={handleStart}
-          onEnd={handleEnd}
+          onEnd={requestEnd}
           isStarting={createSession.isPending}
-          isEnding={endSession.isPending}
         />
       )}
+
+      <EndSessionConfirm
+        open={!!pendingEnd && !!pendingEnd.activeSessionStartedAt}
+        courtName={pendingEnd?.name ?? ""}
+        customerName={pendingEnd?.activeSessionCustomerName ?? null}
+        startedAt={pendingEnd?.activeSessionStartedAt ?? new Date().toISOString()}
+        hourlyRate={pendingEnd?.hourlyRate ?? 0}
+        loading={endSession.isPending}
+        onConfirm={confirmEnd}
+        onCancel={() => setPendingEnd(null)}
+      />
     </div>
   );
 }

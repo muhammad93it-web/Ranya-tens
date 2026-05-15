@@ -38,10 +38,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    if (data) {
-      setUser(data as AuthUser);
-    } else if (error) {
+    if (error) {
       setUser(null);
+    } else if (data) {
+      setUser(data as AuthUser);
     }
   }, [data, error]);
 

@@ -1,118 +1,225 @@
 import { useState } from "react";
-import { useGetCourts, useCreateSession, getGetCourtsQueryKey, getGetDashboardStatsQueryKey } from "@workspace/api-client-react";
+import {
+  useGetTimePresets,
+  useCreateTimePreset,
+  useUpdateTimePreset,
+  useDeleteTimePreset,
+  getGetTimePresetsQueryKey,
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Clock } from "lucide-react";
+import { Clock, Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
 
-const PRESET_TIMES = [15, 30, 60];
-
-interface Court {
+interface TimePreset {
   id: number;
-  name: string;
-  status: string;
+  label: string;
+  minutes: number;
 }
 
 export default function TimesPage() {
-  const [selectedCourtId, setSelectedCourtId] = useState<number | null>(null);
-  const [successMsg, setSuccessMsg] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
+  const { user } = useUser();
+  const isAdmin = user?.role === "admin";
   const queryClient = useQueryClient();
 
-  const { data: courts, isLoading } = useGetCourts({
-    query: { queryKey: getGetCourtsQueryKey() },
+  const { data: presets, isLoading } = useGetTimePresets({
+    query: { queryKey: getGetTimePresetsQueryKey() },
   });
-  const createSession = useCreateSession();
+  const createPreset = useCreateTimePreset();
+  const updatePreset = useUpdateTimePreset();
+  const deletePreset = useDeleteTimePreset();
 
-  const idleCourts = (courts as Court[] ?? []).filter((c) => c.status === "idle");
+  const [newLabel, setNewLabel] = useState("");
+  const [newMinutes, setNewMinutes] = useState("");
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editLabel, setEditLabel] = useState("");
+  const [editMinutes, setEditMinutes] = useState("");
 
-  function handlePreset(minutes: number) {
-    if (!selectedCourtId) {
-      setErrorMsg("تکایە یەک میز هەڵبژێرە");
-      return;
-    }
-    setErrorMsg("");
-    createSession.mutate(
-      { data: { courtId: selectedCourtId, presetMinutes: minutes } },
+  function refresh() {
+    queryClient.invalidateQueries({ queryKey: getGetTimePresetsQueryKey() });
+  }
+
+  function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    const min = Number(newMinutes);
+    if (!newLabel.trim() || !min || min <= 0) return;
+    createPreset.mutate(
+      { data: { label: newLabel.trim(), minutes: min } },
       {
         onSuccess: () => {
-          setSuccessMsg(`میز دەستی پێکرد بۆ ${minutes} خولەک`);
-          setSelectedCourtId(null);
-          queryClient.invalidateQueries({ queryKey: getGetCourtsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getGetDashboardStatsQueryKey() });
-          setTimeout(() => setSuccessMsg(""), 3000);
-        },
-        onError: () => {
-          setErrorMsg("هەڵە ڕوویدا، دووبارە هەوڵ بدەرەوە");
+          setNewLabel("");
+          setNewMinutes("");
+          refresh();
         },
       },
     );
   }
 
+  function startEdit(p: TimePreset) {
+    setEditId(p.id);
+    setEditLabel(p.label);
+    setEditMinutes(String(p.minutes));
+  }
+
+  function handleUpdate() {
+    if (!editId) return;
+    const min = Number(editMinutes);
+    if (!editLabel.trim() || !min || min <= 0) return;
+    updatePreset.mutate(
+      { id: editId, data: { label: editLabel.trim(), minutes: min } },
+      {
+        onSuccess: () => {
+          setEditId(null);
+          refresh();
+        },
+      },
+    );
+  }
+
+  function handleDelete(id: number) {
+    if (!confirm("دڵنیایت لە سڕینەوەی ئەم کاتە؟")) return;
+    deletePreset.mutate({ id }, { onSuccess: refresh });
+  }
+
+  const list = (presets as TimePreset[] ?? []);
+
   return (
     <div>
       <h1 className="text-xl font-bold text-foreground text-end mb-6 flex items-center justify-end gap-2">
-        <span>کاتیەکان</span>
+        <span>کاتەکان</span>
         <Clock className="text-primary" size={22} />
       </h1>
 
-      <div className="max-w-lg mx-auto">
-        <div className="bg-card border border-card-border rounded-2xl p-6 space-y-6">
-          {/* Court selector */}
-          <div>
-            <label className="block text-sm text-muted-foreground text-end mb-2">میز هەڵبژێرە</label>
-            {isLoading ? (
-              <div className="h-12 bg-muted/30 rounded-xl animate-pulse" />
-            ) : idleCourts.length === 0 ? (
-              <div className="py-4 text-center text-muted-foreground text-sm">
-                هیچ میزی بەتاڵ نییە
-              </div>
-            ) : (
-              <select
-                value={selectedCourtId ?? ""}
-                onChange={(e) => setSelectedCourtId(Number(e.target.value))}
-                className="w-full px-4 py-3 rounded-xl bg-muted/30 border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-end"
-                data-testid="select-court"
+      <div className="max-w-2xl mx-auto space-y-6">
+        {/* Add new preset (admin only) */}
+        {isAdmin && (
+          <form
+            onSubmit={handleCreate}
+            className="bg-card border border-card-border rounded-2xl p-5 space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Plus size={16} className="text-primary" />
+                زیادکردنی کاتی نوێ
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px_auto] gap-3">
+              <input
+                type="text"
+                value={newLabel}
+                onChange={(e) => setNewLabel(e.target.value)}
+                placeholder="ناوی کات (نموونە: نیو کاتژمێر)"
+                className="px-3 py-2.5 rounded-xl bg-muted/30 border border-input text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-end"
+                data-testid="input-preset-label"
+              />
+              <input
+                type="number"
+                min="1"
+                value={newMinutes}
+                onChange={(e) => setNewMinutes(e.target.value)}
+                placeholder="خولەک"
+                className="px-3 py-2.5 rounded-xl bg-muted/30 border border-input text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-end"
+                data-testid="input-preset-minutes"
+              />
+              <button
+                type="submit"
+                disabled={createPreset.isPending}
+                className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-1.5 hover:opacity-90 transition-all disabled:opacity-50"
+                data-testid="button-add-preset"
               >
-                <option value="">--- میز هەڵبژێرە ---</option>
-                {idleCourts.map((court) => (
-                  <option key={court.id} value={court.id}>
-                    {court.name}
-                  </option>
-                ))}
-              </select>
-            )}
+                <Plus size={16} />
+                زیادکردن
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* List */}
+        <div className="bg-card border border-card-border rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">
+              {list.length} کات
+            </span>
+            <h2 className="text-sm font-semibold text-foreground">لیستی کاتە سەرەکییەکان</h2>
           </div>
 
-          {/* Preset buttons */}
-          <div>
-            <p className="text-sm text-muted-foreground text-end mb-3">کات هەڵبژێرە</p>
-            <div className="grid grid-cols-3 gap-3">
-              {PRESET_TIMES.map((minutes) => (
-                <button
-                  key={minutes}
-                  onClick={() => handlePreset(minutes)}
-                  disabled={createSession.isPending || !selectedCourtId}
-                  className="flex flex-col items-center gap-2 py-5 rounded-xl border-2 border-border bg-muted/20 hover:border-primary hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all group"
-                  data-testid={`button-preset-${minutes}`}
-                >
-                  <Clock size={24} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                  <span className="text-lg font-bold text-foreground">{minutes}</span>
-                  <span className="text-xs text-muted-foreground">خولەک</span>
-                </button>
+          {isLoading ? (
+            <div className="p-8 text-center text-muted-foreground text-sm">چاوەڕوان بە...</div>
+          ) : list.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground text-sm">هیچ کاتێک نییە</div>
+          ) : (
+            <ul className="divide-y divide-border">
+              {list.map((p) => (
+                <li key={p.id} className="px-5 py-4 flex items-center gap-3" data-testid={`preset-row-${p.id}`}>
+                  {editId === p.id ? (
+                    <>
+                      <button
+                        onClick={() => setEditId(null)}
+                        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                      >
+                        <X size={16} />
+                      </button>
+                      <button
+                        onClick={handleUpdate}
+                        disabled={updatePreset.isPending}
+                        className="p-2 rounded-lg text-primary hover:bg-primary/10 disabled:opacity-50"
+                        data-testid={`button-save-${p.id}`}
+                      >
+                        <Check size={16} />
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        value={editMinutes}
+                        onChange={(e) => setEditMinutes(e.target.value)}
+                        className="w-24 px-2 py-1.5 rounded-lg bg-muted/30 border border-input text-foreground text-end focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                      <input
+                        type="text"
+                        value={editLabel}
+                        onChange={(e) => setEditLabel(e.target.value)}
+                        className="flex-1 px-3 py-1.5 rounded-lg bg-muted/30 border border-input text-foreground text-end focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      {isAdmin && (
+                        <>
+                          <button
+                            onClick={() => handleDelete(p.id)}
+                            className="p-2 rounded-lg text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                            data-testid={`button-delete-${p.id}`}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => startEdit(p)}
+                            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                            data-testid={`button-edit-${p.id}`}
+                          >
+                            <Pencil size={16} />
+                          </button>
+                        </>
+                      )}
+                      <div className="flex-1 flex items-center justify-end gap-3">
+                        <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20">
+                          {p.minutes} خولەک
+                        </span>
+                        <span className="text-foreground font-medium">{p.label}</span>
+                        <Clock size={16} className="text-muted-foreground" />
+                      </div>
+                    </>
+                  )}
+                </li>
               ))}
-            </div>
-          </div>
-
-          {successMsg && (
-            <div className="py-3 px-4 bg-primary/10 text-primary rounded-xl text-sm text-center border border-primary/20">
-              {successMsg}
-            </div>
-          )}
-          {errorMsg && (
-            <div className="py-3 px-4 bg-destructive/10 text-destructive rounded-xl text-sm text-center border border-destructive/20">
-              {errorMsg}
-            </div>
+            </ul>
           )}
         </div>
+
+        {!isAdmin && (
+          <p className="text-xs text-muted-foreground text-center">
+            تەنها ئەدمین دەتوانێت کات زیاد بکات یان دەستکاری بکات
+          </p>
+        )}
       </div>
     </div>
   );

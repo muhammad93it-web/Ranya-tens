@@ -354,6 +354,57 @@ export const GetDashboardStatsResponse = zod.object({
 
 
 /**
+ * @summary List time presets
+ */
+export const GetTimePresetsResponseItem = zod.object({
+  "id": zod.number(),
+  "label": zod.string(),
+  "minutes": zod.number()
+})
+export const GetTimePresetsResponse = zod.array(GetTimePresetsResponseItem)
+
+
+/**
+ * @summary Create time preset (admin only)
+ */
+export const CreateTimePresetBody = zod.object({
+  "label": zod.string(),
+  "minutes": zod.number()
+})
+
+
+/**
+ * @summary Update time preset (admin only)
+ */
+export const UpdateTimePresetParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateTimePresetBody = zod.object({
+  "label": zod.string().optional(),
+  "minutes": zod.number().optional()
+})
+
+export const UpdateTimePresetResponse = zod.object({
+  "id": zod.number(),
+  "label": zod.string(),
+  "minutes": zod.number()
+})
+
+
+/**
+ * @summary Delete time preset (admin only)
+ */
+export const DeleteTimePresetParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteTimePresetResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
  * @summary Get system settings
  */
 export const GetSettingsResponse = zod.object({

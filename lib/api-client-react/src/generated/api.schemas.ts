@@ -17,6 +17,22 @@ export interface SuccessResponse {
   success: boolean;
 }
 
+export interface TimePreset {
+  id: number;
+  label: string;
+  minutes: number;
+}
+
+export interface TimePresetInput {
+  label: string;
+  minutes: number;
+}
+
+export interface TimePresetUpdate {
+  label?: string;
+  minutes?: number;
+}
+
 export type LoginInputRole = typeof LoginInputRole[keyof typeof LoginInputRole];
 
 

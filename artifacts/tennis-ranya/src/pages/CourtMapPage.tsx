@@ -3,8 +3,10 @@ import {
   useGetCourts,
   useCreateSession,
   useEndSession,
+  useGetTimePresets,
   getGetCourtsQueryKey,
   getGetDashboardStatsQueryKey,
+  getGetTimePresetsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { X, Play, Square, User, Clock, MapPin } from "lucide-react";
@@ -21,7 +23,11 @@ interface Court {
   activeSessionCurrentCost: number | null;
 }
 
-const PRESET_TIMES = [15, 30, 45, 60, 90, 120];
+interface TimePreset {
+  id: number;
+  label: string;
+  minutes: number;
+}
 
 function LiveTimer({ startedAt, hourlyRate }: { startedAt: string; hourlyRate: number }) {
   const [elapsed, setElapsed] = useState(0);
@@ -51,6 +57,7 @@ function LiveTimer({ startedAt, hourlyRate }: { startedAt: string; hourlyRate: n
 
 interface PanelProps {
   court: Court;
+  presets: TimePreset[];
   onClose: () => void;
   onStart: (courtId: number, customerName: string, presetMinutes: number | null) => void;
   onEnd: (sessionId: number) => void;
@@ -58,7 +65,7 @@ interface PanelProps {
   isEnding: boolean;
 }
 
-function CourtPanel({ court, onClose, onStart, onEnd, isStarting, isEnding }: PanelProps) {
+function CourtPanel({ court, presets, onClose, onStart, onEnd, isStarting, isEnding }: PanelProps) {
   const [customerName, setCustomerName] = useState("");
   const [presetMinutes, setPresetMinutes] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -144,23 +151,28 @@ function CourtPanel({ court, onClose, onStart, onEnd, isStarting, isEnding }: Pa
                   <span>کاتی یاری (ئیجباری نییە)</span>
                   <Clock size={14} />
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {PRESET_TIMES.map((min) => (
-                    <button
-                      key={min}
-                      type="button"
-                      onClick={() => setPresetMinutes(presetMinutes === min ? null : min)}
-                      className={`py-2 rounded-xl border text-sm font-semibold transition-all ${
-                        presetMinutes === min
-                          ? "border-primary bg-primary/20 text-primary shadow-[0_0_10px_rgba(34,197,94,0.3)]"
-                          : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                      }`}
-                      data-testid={`preset-${min}`}
-                    >
-                      {min < 60 ? `${min}خ` : `${min / 60}کت`}
-                    </button>
-                  ))}
-                </div>
+                {presets.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-end py-2">هیچ کاتێک نییە — لە پەیجی کاتەکان زیاد بکە</p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    {presets.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setPresetMinutes(presetMinutes === p.minutes ? null : p.minutes)}
+                        className={`px-2 py-2 rounded-xl border text-sm font-semibold transition-all flex flex-col items-center gap-0.5 ${
+                          presetMinutes === p.minutes
+                            ? "border-primary bg-primary/20 text-primary shadow-[0_0_10px_rgba(34,197,94,0.3)]"
+                            : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                        }`}
+                        data-testid={`preset-${p.minutes}`}
+                      >
+                        <span className="text-sm">{p.label}</span>
+                        <span className="text-[10px] opacity-70">{p.minutes} خولەک</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {presetMinutes && (
                   <p className="text-xs text-muted-foreground text-end mt-1.5">
                     نرخ: {((presetMinutes / 60) * court.hourlyRate).toFixed(0)} د.ع
@@ -260,8 +272,12 @@ export default function CourtMapPage() {
   const { data: courts, isLoading } = useGetCourts({
     query: { queryKey: getGetCourtsQueryKey(), refetchInterval: 4000 },
   });
+  const { data: presetsData } = useGetTimePresets({
+    query: { queryKey: getGetTimePresetsQueryKey() },
+  });
   const createSession = useCreateSession();
   const endSession = useEndSession();
+  const presets = (presetsData as TimePreset[] ?? []);
 
   const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
 
@@ -338,6 +354,7 @@ export default function CourtMapPage() {
       {selectedCourt && (
         <CourtPanel
           court={selectedCourt}
+          presets={presets}
           onClose={() => setSelectedCourt(null)}
           onStart={handleStart}
           onEnd={handleEnd}

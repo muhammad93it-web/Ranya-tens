@@ -458,6 +458,80 @@ paths:
               schema:
                 $ref: "#/components/schemas/DashboardStats"
 
+  /time-presets:
+    get:
+      operationId: getTimePresets
+      tags: [settings]
+      summary: List time presets
+      responses:
+        "200":
+          description: List of time presets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TimePreset"
+    post:
+      operationId: createTimePreset
+      tags: [settings]
+      summary: Create time preset (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimePresetInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimePreset"
+
+  /time-presets/{id}:
+    patch:
+      operationId: updateTimePreset
+      tags: [settings]
+      summary: Update time preset (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimePresetUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimePreset"
+    delete:
+      operationId: deleteTimePreset
+      tags: [settings]
+      summary: Delete time preset (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   /settings:
     get:
       operationId: getSettings
@@ -513,6 +587,34 @@ components:
           type: boolean
       required:
         - success
+
+    TimePreset:
+      type: object
+      required: [id, label, minutes]
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+        minutes:
+          type: integer
+
+    TimePresetInput:
+      type: object
+      required: [label, minutes]
+      properties:
+        label:
+          type: string
+        minutes:
+          type: integer
+
+    TimePresetUpdate:
+      type: object
+      properties:
+        label:
+          type: string
+        minutes:
+          type: integer
 
     LoginInput:
       type: object

@@ -39,6 +39,9 @@ import type {
   Settings,
   SettingsUpdate,
   SuccessResponse,
+  TimePreset,
+  TimePresetInput,
+  TimePresetUpdate,
   User,
   UserInput,
   UserUpdate
@@ -1766,6 +1769,296 @@ export function useGetDashboardStats<TData = Awaited<ReturnType<typeof getDashbo
 
 
 
+
+export const getGetTimePresetsUrl = () => {
+
+
+
+
+  return `/api/time-presets`
+}
+
+/**
+ * @summary List time presets
+ */
+export const getTimePresets = async ( options?: RequestInit): Promise<TimePreset[]> => {
+
+  return customFetch<TimePreset[]>(getGetTimePresetsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTimePresetsQueryKey = () => {
+    return [
+    `/api/time-presets`
+    ] as const;
+    }
+
+
+export const getGetTimePresetsQueryOptions = <TData = Awaited<ReturnType<typeof getTimePresets>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTimePresets>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTimePresetsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTimePresets>>> = ({ signal }) => getTimePresets({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTimePresets>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTimePresetsQueryResult = NonNullable<Awaited<ReturnType<typeof getTimePresets>>>
+export type GetTimePresetsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List time presets
+ */
+
+export function useGetTimePresets<TData = Awaited<ReturnType<typeof getTimePresets>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTimePresets>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTimePresetsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateTimePresetUrl = () => {
+
+
+
+
+  return `/api/time-presets`
+}
+
+/**
+ * @summary Create time preset (admin only)
+ */
+export const createTimePreset = async (timePresetInput: TimePresetInput, options?: RequestInit): Promise<TimePreset> => {
+
+  return customFetch<TimePreset>(getCreateTimePresetUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      timePresetInput,)
+  }
+);}
+
+
+
+
+export const getCreateTimePresetMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTimePreset>>, TError,{data: BodyType<TimePresetInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createTimePreset>>, TError,{data: BodyType<TimePresetInput>}, TContext> => {
+
+const mutationKey = ['createTimePreset'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTimePreset>>, {data: BodyType<TimePresetInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createTimePreset(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateTimePresetMutationResult = NonNullable<Awaited<ReturnType<typeof createTimePreset>>>
+    export type CreateTimePresetMutationBody = BodyType<TimePresetInput>
+    export type CreateTimePresetMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create time preset (admin only)
+ */
+export const useCreateTimePreset = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTimePreset>>, TError,{data: BodyType<TimePresetInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createTimePreset>>,
+        TError,
+        {data: BodyType<TimePresetInput>},
+        TContext
+      > => {
+      return useMutation(getCreateTimePresetMutationOptions(options));
+    }
+
+export const getUpdateTimePresetUrl = (id: number,) => {
+
+
+
+
+  return `/api/time-presets/${id}`
+}
+
+/**
+ * @summary Update time preset (admin only)
+ */
+export const updateTimePreset = async (id: number,
+    timePresetUpdate: TimePresetUpdate, options?: RequestInit): Promise<TimePreset> => {
+
+  return customFetch<TimePreset>(getUpdateTimePresetUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      timePresetUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateTimePresetMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTimePreset>>, TError,{id: number;data: BodyType<TimePresetUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateTimePreset>>, TError,{id: number;data: BodyType<TimePresetUpdate>}, TContext> => {
+
+const mutationKey = ['updateTimePreset'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTimePreset>>, {id: number;data: BodyType<TimePresetUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateTimePreset(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateTimePresetMutationResult = NonNullable<Awaited<ReturnType<typeof updateTimePreset>>>
+    export type UpdateTimePresetMutationBody = BodyType<TimePresetUpdate>
+    export type UpdateTimePresetMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update time preset (admin only)
+ */
+export const useUpdateTimePreset = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTimePreset>>, TError,{id: number;data: BodyType<TimePresetUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateTimePreset>>,
+        TError,
+        {id: number;data: BodyType<TimePresetUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateTimePresetMutationOptions(options));
+    }
+
+export const getDeleteTimePresetUrl = (id: number,) => {
+
+
+
+
+  return `/api/time-presets/${id}`
+}
+
+/**
+ * @summary Delete time preset (admin only)
+ */
+export const deleteTimePreset = async (id: number, options?: RequestInit): Promise<SuccessResponse> => {
+
+  return customFetch<SuccessResponse>(getDeleteTimePresetUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteTimePresetMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTimePreset>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTimePreset>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteTimePreset'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTimePreset>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteTimePreset(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteTimePresetMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTimePreset>>>
+
+    export type DeleteTimePresetMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete time preset (admin only)
+ */
+export const useDeleteTimePreset = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTimePreset>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteTimePreset>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteTimePresetMutationOptions(options));
+    }
 
 export const getGetSettingsUrl = () => {
 

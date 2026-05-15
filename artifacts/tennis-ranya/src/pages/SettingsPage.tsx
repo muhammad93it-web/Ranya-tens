@@ -12,6 +12,15 @@ import {
 } from "lucide-react";
 import { toEnglishDigits } from "@/lib/digits";
 
+function format12h(t: string): string {
+  const [hStr, mStr] = t.split(":");
+  const h = parseInt(hStr ?? "0", 10);
+  const m = mStr ?? "00";
+  const period = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${m} ${period}`;
+}
+
 interface SettingsData {
   id: number;
   systemName: string;
@@ -356,7 +365,7 @@ export default function SettingsPage() {
           {form.telegramDailyEnabled && (
             <div className="p-4 rounded-xl bg-muted/20 border border-border mb-3">
               <p className="text-sm font-semibold text-foreground text-end mb-1">کاتە جیاوازەکانی نێردنی ڕاپۆرتی ڕۆژانە</p>
-              <p className="text-xs text-muted-foreground text-end mb-3">بۆ نموونە ۲۲:۰۰ یان ٢٣:٠٠</p>
+              <p className="text-xs text-muted-foreground text-end mb-3">کات هەڵبژێرە و دواتر «زیادکردن» کلیک بکە</p>
               <div className="flex gap-2 mb-3 flex-row-reverse">
                 <input type="time" value={newTime} onChange={(e) => setNewTime(e.target.value)}
                   className="flex-1 px-3.5 py-2 rounded-xl bg-muted/30 border border-input text-foreground text-end focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -373,7 +382,7 @@ export default function SettingsPage() {
                 ) : form.telegramDailyTimes.map((t) => (
                   <span key={t} className="px-3 py-1.5 rounded-lg bg-primary/15 border border-primary/30 text-primary text-sm flex items-center gap-1.5">
                     <button onClick={() => removeTime(t)} className="hover:text-destructive"><X size={12} /></button>
-                    <span className="font-mono">{t}</span>
+                    <span className="font-mono">{format12h(t)}</span>
                   </span>
                 ))}
               </div>

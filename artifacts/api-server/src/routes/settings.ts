@@ -1,9 +1,10 @@
 import { Router, type IRouter } from "express";
-import { db, settingsTable, sessionsTable, courtsTable, expensesTable } from "@workspace/db";
-import { eq, and, sql } from "drizzle-orm";
+import { db, settingsTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { UpdateSettingsBody, SendTelegramReportBody } from "@workspace/api-zod";
 import { requireAuth, requireAdmin } from "../middlewares/auth";
-import { APP_TIMEZONE, todayLocal } from "../lib/date";
+import { todayLocal } from "../lib/date";
+import { buildReportText, sendTelegramMessage } from "../lib/telegram";
 
 const router: IRouter = Router();
 
@@ -58,52 +59,6 @@ router.patch("/settings", requireAuth, requireAdmin, async (req, res): Promise<v
   res.json(formatSettings(updated, true));
 });
 
-async function buildReportText(startDate: string, endDate: string): Promise<string> {
-  const sessions = await db
-    .select({
-      session: sessionsTable,
-      courtName: courtsTable.name,
-    })
-    .from(sessionsTable)
-    .leftJoin(courtsTable, eq(sessionsTable.courtId, courtsTable.id))
-    .where(
-      and(
-        eq(sessionsTable.status, "completed"),
-        sql`DATE(${sessionsTable.startedAt} AT TIME ZONE ${APP_TIMEZONE}) >= ${startDate}`,
-        sql`DATE(${sessionsTable.startedAt} AT TIME ZONE ${APP_TIMEZONE}) <= ${endDate}`,
-      ),
-    );
-
-  const expenses = await db
-    .select()
-    .from(expensesTable)
-    .where(
-      and(
-        sql`${expensesTable.date} >= ${startDate}`,
-        sql`${expensesTable.date} <= ${endDate}`,
-      ),
-    );
-
-  const totalIncome = sessions.reduce(
-    (sum, r) => sum + (r.session.totalCost ? parseFloat(r.session.totalCost) : 0),
-    0,
-  );
-  const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-  const netProfit = totalIncome - totalExpenses;
-
-  return [
-    `📊 ڕاپۆرتی Tennis Ranya`,
-    `📅 ${startDate} — ${endDate}`,
-    ``,
-    `💰 کۆی داهات: ${totalIncome.toFixed(0)} د.ع`,
-    `💸 کۆی خەرجی: ${totalExpenses.toFixed(0)} د.ع`,
-    `${netProfit >= 0 ? "✅" : "⚠️"} قازانجی پوختە: ${netProfit.toFixed(0)} د.ع`,
-    ``,
-    `🎾 ژمارەی یاری: ${sessions.length}`,
-    `📝 ژمارەی خەرجی: ${expenses.length}`,
-  ].join("\n");
-}
-
 router.post("/telegram/send-report", requireAuth, requireAdmin, async (req, res): Promise<void> => {
   const parsed = SendTelegramReportBody.safeParse(req.body ?? {});
   if (!parsed.success) {
@@ -122,24 +77,12 @@ router.post("/telegram/send-report", requireAuth, requireAdmin, async (req, res)
   const endDate = parsed.data.endDate ?? today;
 
   const text = await buildReportText(startDate, endDate);
-
-  try {
-    const url = `https://api.telegram.org/bot${settings.telegramBotToken}/sendMessage`;
-    const tgRes = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: settings.telegramChatId, text }),
-    });
-    const json = (await tgRes.json()) as { ok?: boolean; description?: string };
-    if (!json.ok) {
-      res.status(502).json({ error: json.description ?? "نەنێردرا بۆ تێلێگرام" });
-      return;
-    }
-    res.json({ success: true });
-  } catch (err) {
-    req.log?.error({ err }, "telegram send failed");
-    res.status(502).json({ error: "هەڵە لە پەیوەندیکردن بە تێلێگرام" });
+  const result = await sendTelegramMessage(settings.telegramBotToken, settings.telegramChatId, text);
+  if (!result.ok) {
+    res.status(502).json({ error: result.description ?? "نەنێردرا بۆ تێلێگرام" });
+    return;
   }
+  res.json({ success: true });
 });
 
 export default router;

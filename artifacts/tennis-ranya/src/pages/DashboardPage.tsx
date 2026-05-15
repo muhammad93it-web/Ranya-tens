@@ -199,10 +199,10 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Rate */}
+              {/* Rate per minute */}
               <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{court.hourlyRate} د.ع</span>
-                <span>نرخ خولەک</span>
+                <span>{Math.round(court.hourlyRate / 60)} د.ع</span>
+                <span>نرخی خولەک</span>
               </div>
 
               {/* Action button */}

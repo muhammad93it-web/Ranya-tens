@@ -3,13 +3,27 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Tennis Ranya API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: courts
+    description: Court management
+  - name: sessions
+    description: Game session management
+  - name: expenses
+    description: Expense management
+  - name: users
+    description: User management
+  - name: reports
+    description: Reports and analytics
+  - name: settings
+    description: System settings
 paths:
   /healthz:
     get:
@@ -24,6 +38,456 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /courts:
+    get:
+      operationId: getCourts
+      tags: [courts]
+      summary: Get all courts
+      responses:
+        "200":
+          description: List of courts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Court"
+    post:
+      operationId: createCourt
+      tags: [courts]
+      summary: Create a court
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourtInput"
+      responses:
+        "201":
+          description: Court created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Court"
+
+  /courts/{id}:
+    get:
+      operationId: getCourt
+      tags: [courts]
+      summary: Get a court
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Court
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Court"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateCourt
+      tags: [courts]
+      summary: Update a court
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourtUpdate"
+      responses:
+        "200":
+          description: Updated court
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Court"
+    delete:
+      operationId: deleteCourt
+      tags: [courts]
+      summary: Delete a court
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /sessions:
+    get:
+      operationId: getSessions
+      tags: [sessions]
+      summary: Get all sessions
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+        - name: courtId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Session"
+    post:
+      operationId: createSession
+      tags: [sessions]
+      summary: Start a session for a court
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionInput"
+      responses:
+        "201":
+          description: Session started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /sessions/{id}:
+    get:
+      operationId: getSession
+      tags: [sessions]
+      summary: Get a session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+    delete:
+      operationId: deleteSession
+      tags: [sessions]
+      summary: Delete a session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /sessions/{id}/end:
+    post:
+      operationId: endSession
+      tags: [sessions]
+      summary: End an active session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Session ended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /expenses:
+    get:
+      operationId: getExpenses
+      tags: [expenses]
+      summary: Get all expenses
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of expenses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Expense"
+    post:
+      operationId: createExpense
+      tags: [expenses]
+      summary: Create an expense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseInput"
+      responses:
+        "201":
+          description: Expense created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+
+  /expenses/{id}:
+    delete:
+      operationId: deleteExpense
+      tags: [expenses]
+      summary: Delete an expense
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /users:
+    get:
+      operationId: getUsers
+      tags: [users]
+      summary: Get all users (admin only)
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a user (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update a user (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete a user (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /reports/summary:
+    get:
+      operationId: getReportSummary
+      tags: [reports]
+      summary: Get financial summary
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          schema:
+            type: string
+        - name: endDate
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Financial summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportSummary"
+
+  /reports/dashboard:
+    get:
+      operationId: getDashboardStats
+      tags: [reports]
+      summary: Get dashboard stats (courts status, today income, idle count)
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get system settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+    patch:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update system settings (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +498,223 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+
+    LoginInput:
+      type: object
+      required: [username, password, role]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [admin, cashier]
+
+    AuthResult:
+      type: object
+      required: [user]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      required: [id, username, role]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        role:
+          type: string
+          enum: [admin, cashier]
+
+    UserInput:
+      type: object
+      required: [username, password, role]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [admin, cashier]
+
+    UserUpdate:
+      type: object
+      properties:
+        password:
+          type: string
+        role:
+          type: string
+          enum: [admin, cashier]
+
+    Court:
+      type: object
+      required: [id, name, hourlyRate, status]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        hourlyRate:
+          type: number
+        status:
+          type: string
+          enum: [idle, active]
+        activeSessionId:
+          type: ["integer", "null"]
+        activeSessionStartedAt:
+          type: ["string", "null"]
+        activeSessionElapsedMinutes:
+          type: ["number", "null"]
+        activeSessionCurrentCost:
+          type: ["number", "null"]
+
+    CourtInput:
+      type: object
+      required: [name, hourlyRate]
+      properties:
+        name:
+          type: string
+        hourlyRate:
+          type: number
+
+    CourtUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        hourlyRate:
+          type: number
+
+    Session:
+      type: object
+      required: [id, courtId, courtName, startedAt, status]
+      properties:
+        id:
+          type: integer
+        courtId:
+          type: integer
+        courtName:
+          type: string
+        startedAt:
+          type: string
+        endedAt:
+          type: ["string", "null"]
+        durationMinutes:
+          type: ["number", "null"]
+        totalCost:
+          type: ["number", "null"]
+        status:
+          type: string
+          enum: [active, completed]
+
+    SessionInput:
+      type: object
+      required: [courtId]
+      properties:
+        courtId:
+          type: integer
+        presetMinutes:
+          type: ["integer", "null"]
+
+    Expense:
+      type: object
+      required: [id, type, amount, date]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+
+    ExpenseInput:
+      type: object
+      required: [type, amount]
+      properties:
+        type:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+
+    ReportSummary:
+      type: object
+      required: [totalIncome, totalExpenses, netProfit, sessions, expenses]
+      properties:
+        totalIncome:
+          type: number
+        totalExpenses:
+          type: number
+        netProfit:
+          type: number
+        sessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Session"
+        expenses:
+          type: array
+          items:
+            $ref: "#/components/schemas/Expense"
+
+    DashboardStats:
+      type: object
+      required: [totalActiveCourts, totalIdleCourts, todayIncome, activeSessions]
+      properties:
+        totalActiveCourts:
+          type: integer
+        totalIdleCourts:
+          type: integer
+        todayIncome:
+          type: number
+        activeSessions:
+          type: integer
+
+    Settings:
+      type: object
+      required: [id, systemName, themeColor]
+      properties:
+        id:
+          type: integer
+        systemName:
+          type: string
+        themeColor:
+          type: string
+        telegramApiKey:
+          type: ["string", "null"]
+        discordWebhookUrl:
+          type: ["string", "null"]
+
+    SettingsUpdate:
+      type: object
+      properties:
+        systemName:
+          type: string
+        themeColor:
+          type: string
+        telegramApiKey:
+          type: string
+        discordWebhookUrl:
+          type: string

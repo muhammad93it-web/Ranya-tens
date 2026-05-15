@@ -7,7 +7,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Settings as SettingsIcon, Save, Store, Palette, Send, Plus, X,
+  Settings as SettingsIcon, Save, Store, Palette, Send, Plus, Minus, X,
   Type as TypeIcon,
 } from "lucide-react";
 import { toEnglishDigits } from "@/lib/digits";
@@ -88,23 +88,7 @@ export default function SettingsPage() {
 
   function handleSave() {
     if (!form) return;
-    updateSettings.mutate({
-      data: {
-        systemName: form.systemName,
-        themeColor: form.themeColor,
-        shopName: form.shopName ?? "",
-        marketCategory: form.marketCategory ?? "",
-        phoneNumber: form.phoneNumber ?? "",
-        address: form.address ?? "",
-        fontFamily: form.fontFamily,
-        fontSize: form.fontSize,
-        telegramBotToken: form.telegramBotToken ?? "",
-        telegramChatId: form.telegramChatId ?? "",
-        telegramDailyEnabled: form.telegramDailyEnabled,
-        telegramMonthlyEnabled: form.telegramMonthlyEnabled,
-        telegramDailyTimes: form.telegramDailyTimes,
-      },
-    }, {
+    updateSettings.mutate({ data: buildPayload(form) }, {
       onSuccess: () => {
         setSaved(true);
         queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() });
@@ -125,32 +109,78 @@ export default function SettingsPage() {
     patch("telegramDailyTimes", form.telegramDailyTimes.filter((x) => x !== t));
   }
 
-  function sendNow() {
-    sendTelegram.mutate({ data: {} }, {
+  function buildPayload(f: SettingsData) {
+    return {
+      systemName: f.systemName,
+      themeColor: f.themeColor,
+      shopName: f.shopName ?? "",
+      marketCategory: f.marketCategory ?? "",
+      phoneNumber: f.phoneNumber ?? "",
+      address: f.address ?? "",
+      fontFamily: f.fontFamily,
+      fontSize: f.fontSize,
+      telegramBotToken: f.telegramBotToken ?? "",
+      telegramChatId: f.telegramChatId ?? "",
+      telegramDailyEnabled: f.telegramDailyEnabled,
+      telegramMonthlyEnabled: f.telegramMonthlyEnabled,
+      telegramDailyTimes: f.telegramDailyTimes,
+    };
+  }
+
+  function saveThen(action: () => void) {
+    if (!form) return;
+    updateSettings.mutate({ data: buildPayload(form) }, {
       onSuccess: () => {
-        setFeedback("ڕاپۆرتی ئەمڕۆ نێردرا ✓");
-        setTimeout(() => setFeedback(null), 3000);
+        queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() });
+        action();
       },
-      onError: (err: unknown) => {
-        const msg = err instanceof Error ? err.message : "هەڵە";
-        setFeedback(`نەنێردرا: ${msg}`);
-        setTimeout(() => setFeedback(null), 5000);
+      onError: () => {
+        setFeedback("هەڵە لە پاشەکەوتکردنی ڕێکخستن");
+        setTimeout(() => setFeedback(null), 4000);
       },
+    });
+  }
+
+  function sendNow() {
+    if (!form?.telegramBotToken || !form?.telegramChatId) {
+      setFeedback("تکایە سەرەتا بۆت تۆکێن و چات ئایدی پڕبکەرەوە");
+      setTimeout(() => setFeedback(null), 4000);
+      return;
+    }
+    saveThen(() => {
+      sendTelegram.mutate({ data: {} }, {
+        onSuccess: () => {
+          setFeedback("ڕاپۆرتی ئەمڕۆ نێردرا ✓");
+          setTimeout(() => setFeedback(null), 3000);
+        },
+        onError: (err: unknown) => {
+          const msg = err instanceof Error ? err.message : "هەڵە";
+          setFeedback(`نەنێردرا: ${msg}`);
+          setTimeout(() => setFeedback(null), 5000);
+        },
+      });
     });
   }
 
   function sendCustom() {
     if (!sendStart || !sendEnd) return;
-    sendTelegram.mutate({ data: { startDate: sendStart, endDate: sendEnd } }, {
-      onSuccess: () => {
-        setFeedback("ڕاپۆرت نێردرا ✓");
-        setTimeout(() => setFeedback(null), 3000);
-      },
-      onError: (err: unknown) => {
-        const msg = err instanceof Error ? err.message : "هەڵە";
-        setFeedback(`نەنێردرا: ${msg}`);
-        setTimeout(() => setFeedback(null), 5000);
-      },
+    if (!form?.telegramBotToken || !form?.telegramChatId) {
+      setFeedback("تکایە سەرەتا بۆت تۆکێن و چات ئایدی پڕبکەرەوە");
+      setTimeout(() => setFeedback(null), 4000);
+      return;
+    }
+    saveThen(() => {
+      sendTelegram.mutate({ data: { startDate: sendStart, endDate: sendEnd } }, {
+        onSuccess: () => {
+          setFeedback("ڕاپۆرت نێردرا ✓");
+          setTimeout(() => setFeedback(null), 3000);
+        },
+        onError: (err: unknown) => {
+          const msg = err instanceof Error ? err.message : "هەڵە";
+          setFeedback(`نەنێردرا: ${msg}`);
+          setTimeout(() => setFeedback(null), 5000);
+        },
+      });
     });
   }
 
@@ -238,21 +268,27 @@ export default function SettingsPage() {
               <div>
                 <label className="block text-xs text-muted-foreground text-end mb-1.5">قەبارەی فۆنت</label>
                 <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => {
-                    const i = SIZES.indexOf(form.fontSize);
-                    if (i < SIZES.length - 1) patch("fontSize", SIZES[i + 1]);
-                  }} className="w-9 h-9 rounded-lg bg-muted/30 border border-input hover:bg-muted/50">
-                    <Plus size={14} className="mx-auto" />
+                  <button type="button" data-testid="button-font-bigger"
+                    onClick={() => {
+                      const i = SIZES.indexOf(form.fontSize);
+                      if (i < SIZES.length - 1) patch("fontSize", SIZES[i + 1]);
+                    }}
+                    disabled={SIZES.indexOf(form.fontSize) >= SIZES.length - 1}
+                    className="w-9 h-9 rounded-lg bg-primary/15 border border-primary/30 text-primary hover:bg-primary/25 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                    <Plus size={16} className="mx-auto" />
                   </button>
                   <div className="flex-1 px-3.5 py-2.5 rounded-xl bg-muted/30 border border-input text-foreground text-end text-sm flex items-center justify-between">
                     <TypeIcon size={14} className="text-muted-foreground" />
                     <span>{SIZE_LABELS[form.fontSize] ?? form.fontSize}</span>
                   </div>
-                  <button type="button" onClick={() => {
-                    const i = SIZES.indexOf(form.fontSize);
-                    if (i > 0) patch("fontSize", SIZES[i - 1]);
-                  }} className="w-9 h-9 rounded-lg bg-muted/30 border border-input hover:bg-muted/50">
-                    <X size={14} className="mx-auto rotate-45" />
+                  <button type="button" data-testid="button-font-smaller"
+                    onClick={() => {
+                      const i = SIZES.indexOf(form.fontSize);
+                      if (i > 0) patch("fontSize", SIZES[i - 1]);
+                    }}
+                    disabled={SIZES.indexOf(form.fontSize) <= 0}
+                    className="w-9 h-9 rounded-lg bg-muted/30 border border-input text-foreground hover:bg-muted/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                    <Minus size={16} className="mx-auto" />
                   </button>
                 </div>
               </div>

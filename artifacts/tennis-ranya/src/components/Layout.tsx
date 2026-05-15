@@ -42,7 +42,21 @@ interface LayoutProps {
 
 interface SettingsForLayout {
   systemName?: string;
+  fontSize?: string;
+  fontFamily?: string;
 }
+
+const FONT_SIZE_PX: Record<string, string> = {
+  small: "14px",
+  medium: "16px",
+  large: "18px",
+};
+
+const FONT_FAMILY_CSS: Record<string, string> = {
+  default: "",
+  sans: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+  serif: "ui-serif, Georgia, 'Times New Roman', serif",
+};
 
 export function Layout({ children }: LayoutProps) {
   const [location, setLocation] = useLocation();
@@ -51,6 +65,15 @@ export function Layout({ children }: LayoutProps) {
 
   const { data: settings } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
   const s = settings as SettingsForLayout | undefined;
+
+  // Apply font size & family globally (rem-scaled so layout remains responsive)
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.fontSize = FONT_SIZE_PX[s?.fontSize ?? "medium"] ?? "16px";
+    const ff = FONT_FAMILY_CSS[s?.fontFamily ?? "default"];
+    if (ff) root.style.fontFamily = ff;
+    else root.style.removeProperty("font-family");
+  }, [s?.fontSize, s?.fontFamily]);
 
   // Per-user permissions (cashiers only — admins always see everything)
   const userPermissions = user?.permissions ?? DEFAULT_PERMISSIONS;

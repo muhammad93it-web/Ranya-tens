@@ -281,6 +281,7 @@ export default function CourtMapPage() {
 
   const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
   const [pendingEnd, setPendingEnd] = useState<Court | null>(null);
+  const [endDone, setEndDone] = useState(false);
 
   function handleStart(courtId: number, customerName: string, presetMinutes: number | null) {
     createSession.mutate(
@@ -306,12 +307,17 @@ export default function CourtMapPage() {
       { id: pendingEnd.activeSessionId },
       {
         onSuccess: () => {
-          setPendingEnd(null);
+          setEndDone(true);
           queryClient.invalidateQueries({ queryKey: getGetCourtsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetDashboardStatsQueryKey() });
         },
       },
     );
+  }
+
+  function closeEnd() {
+    setPendingEnd(null);
+    setEndDone(false);
   }
 
   const courtList = (courts as Court[] ?? []);
@@ -376,8 +382,10 @@ export default function CourtMapPage() {
         startedAt={pendingEnd?.activeSessionStartedAt ?? new Date().toISOString()}
         hourlyRate={pendingEnd?.hourlyRate ?? 0}
         loading={endSession.isPending}
+        done={endDone}
         onConfirm={confirmEnd}
-        onCancel={() => setPendingEnd(null)}
+        onCancel={closeEnd}
+        onClose={closeEnd}
       />
     </div>
   );

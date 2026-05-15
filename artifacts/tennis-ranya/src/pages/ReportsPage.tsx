@@ -6,6 +6,7 @@ import { useUser } from "@/contexts/UserContext";
 interface Session {
   id: number;
   courtName: string;
+  customerName?: string | null;
   startedAt: string;
   durationMinutes: number | null;
   totalCost: number | null;
@@ -196,19 +197,27 @@ export default function ReportsPage() {
             <tr className="border-b border-border">
               <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">کۆی نرخ</th>
               <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">ماوە</th>
+              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">ناوی کەس</th>
               <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">میز</th>
               <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">بەروار و کات</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground text-sm">چاوەڕوانبە...</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground text-sm">چاوەڕوانبە...</td></tr>
             ) : (data?.sessions as Session[] ?? []).length === 0 ? (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground text-sm">هیچ یاریێک نییە لەم بەرواردا</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground text-sm">هیچ یاریێک نییە لەم بەرواردا</td></tr>
             ) : (data?.sessions as Session[] ?? []).map((s) => (
               <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/10 transition-colors">
                 <td className="px-4 py-3 text-end text-primary font-medium">{s.totalCost?.toFixed(0) ?? "---"} د.ع</td>
                 <td className="px-4 py-3 text-end text-foreground">{formatDuration(s.durationMinutes)}</td>
+                <td className="px-4 py-3 text-end">
+                  {s.customerName ? (
+                    <span className="text-amber-400 font-medium">{s.customerName}</span>
+                  ) : (
+                    <span className="text-muted-foreground/60 text-xs">—</span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-end text-foreground">{s.courtName}</td>
                 <td className="px-4 py-3 text-end text-muted-foreground text-sm">{formatDateTime(s.startedAt)}</td>
               </tr>

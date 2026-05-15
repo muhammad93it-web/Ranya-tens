@@ -62,6 +62,7 @@ export default function DashboardPage() {
   const endSession = useEndSession();
 
   const [pendingEnd, setPendingEnd] = useState<Court | null>(null);
+  const [endDone, setEndDone] = useState(false);
 
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -87,12 +88,17 @@ export default function DashboardPage() {
       { id: pendingEnd.activeSessionId },
       {
         onSuccess: () => {
-          setPendingEnd(null);
+          setEndDone(true);
           queryClient.invalidateQueries({ queryKey: getGetCourtsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetDashboardStatsQueryKey() });
         },
       },
     );
+  }
+
+  function closeEnd() {
+    setPendingEnd(null);
+    setEndDone(false);
   }
 
   const timeString = now.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
@@ -245,8 +251,10 @@ export default function DashboardPage() {
         startedAt={pendingEnd?.activeSessionStartedAt ?? new Date().toISOString()}
         hourlyRate={pendingEnd?.hourlyRate ?? 0}
         loading={endSession.isPending}
+        done={endDone}
         onConfirm={confirmEnd}
-        onCancel={() => setPendingEnd(null)}
+        onCancel={closeEnd}
+        onClose={closeEnd}
       />
     </div>
   );

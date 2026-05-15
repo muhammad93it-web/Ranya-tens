@@ -58,6 +58,7 @@ router.get("/reports/summary", requireAuth, async (req, res): Promise<void> => {
     id: r.session.id,
     courtId: r.session.courtId,
     courtName: r.courtName ?? "نەزانراو",
+    customerName: r.session.customerName ?? null,
     startedAt: r.session.startedAt.toISOString(),
     endedAt: r.session.endedAt ? r.session.endedAt.toISOString() : null,
     durationMinutes: r.session.durationMinutes ? parseFloat(r.session.durationMinutes) : null,

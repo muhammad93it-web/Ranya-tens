@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserProvider, useUser } from "@/contexts/UserContext";
 import { Layout } from "@/components/Layout";
 import LoginPage from "@/pages/LoginPage";
+import CourtMapPage from "@/pages/CourtMapPage";
 import DashboardPage from "@/pages/DashboardPage";
 import TimesPage from "@/pages/TimesPage";
 import CourtsPage from "@/pages/CourtsPage";
@@ -77,7 +78,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={() => <PublicRoute component={LoginPage} />} />
-      <Route path="/" component={() => <Redirect to="/dashboard" />} />
+      <Route path="/" component={() => <Redirect to="/map" />} />
+      <Route path="/map" component={() => <ProtectedRoute component={CourtMapPage} />} />
       <Route path="/dashboard" component={() => <ProtectedRoute component={DashboardPage} />} />
       <Route path="/times" component={() => <ProtectedRoute component={TimesPage} />} />
       <Route path="/courts" component={() => <ProtectedRoute component={CourtsPage} adminOnly />} />

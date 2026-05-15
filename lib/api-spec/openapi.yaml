@@ -516,10 +516,8 @@ components:
 
     LoginInput:
       type: object
-      required: [username, password, role]
+      required: [password, role]
       properties:
-        username:
-          type: string
         password:
           type: string
         role:
@@ -581,6 +579,8 @@ components:
           enum: [idle, active]
         activeSessionId:
           type: ["integer", "null"]
+        activeSessionCustomerName:
+          type: ["string", "null"]
         activeSessionStartedAt:
           type: ["string", "null"]
         activeSessionElapsedMinutes:
@@ -615,6 +615,8 @@ components:
           type: integer
         courtName:
           type: string
+        customerName:
+          type: ["string", "null"]
         startedAt:
           type: string
         endedAt:
@@ -633,6 +635,8 @@ components:
       properties:
         courtId:
           type: integer
+        customerName:
+          type: ["string", "null"]
         presetMinutes:
           type: ["integer", "null"]
 

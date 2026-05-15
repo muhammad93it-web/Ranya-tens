@@ -9,6 +9,7 @@ import {
   Settings,
   LogOut,
   Trophy,
+  Map,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 
@@ -20,7 +21,8 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { path: "/dashboard", label: "میزەکان", icon: <LayoutGrid size={18} /> },
+  { path: "/map", label: "نەخشەی مێزەکان", icon: <Map size={18} /> },
+  { path: "/dashboard", label: "داشبۆرد", icon: <LayoutGrid size={18} /> },
   { path: "/times", label: "کاتیەکان", icon: <Clock size={18} /> },
   { path: "/courts", label: "بەڕێوەبردنی میزەکان", icon: <Table2 size={18} />, adminOnly: true },
   { path: "/reports", label: "ڕاپۆرتەکان", icon: <BarChart3 size={18} /> },

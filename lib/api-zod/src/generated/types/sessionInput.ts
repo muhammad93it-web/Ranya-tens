@@ -9,5 +9,7 @@
 export interface SessionInput {
   courtId: number;
   /** @nullable */
+  customerName?: string | null;
+  /** @nullable */
   presetMinutes?: number | null;
 }

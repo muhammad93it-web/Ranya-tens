@@ -18,13 +18,12 @@ export default function LoginPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const username = role === "admin" ? "admin" : "cashier";
     loginMutation.mutate(
-      { data: { username, password, role } },
+      { data: { password, role } },
       {
         onSuccess: (data) => {
           setUser(data.user as { id: number; username: string; role: "admin" | "cashier" });
-          setLocation("/dashboard");
+          setLocation("/map");
         },
         onError: () => {
           setError("وشەی نهێنی هەڵەیە");

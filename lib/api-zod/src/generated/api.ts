@@ -21,7 +21,6 @@ export const HealthCheckResponse = zod.object({
  * @summary Login
  */
 export const LoginBody = zod.object({
-  "username": zod.string(),
   "password": zod.string(),
   "role": zod.enum(['admin', 'cashier'])
 })
@@ -62,6 +61,7 @@ export const GetCourtsResponseItem = zod.object({
   "hourlyRate": zod.number(),
   "status": zod.enum(['idle', 'active']),
   "activeSessionId": zod.number().nullish(),
+  "activeSessionCustomerName": zod.string().nullish(),
   "activeSessionStartedAt": zod.string().nullish(),
   "activeSessionElapsedMinutes": zod.number().nullish(),
   "activeSessionCurrentCost": zod.number().nullish()
@@ -91,6 +91,7 @@ export const GetCourtResponse = zod.object({
   "hourlyRate": zod.number(),
   "status": zod.enum(['idle', 'active']),
   "activeSessionId": zod.number().nullish(),
+  "activeSessionCustomerName": zod.string().nullish(),
   "activeSessionStartedAt": zod.string().nullish(),
   "activeSessionElapsedMinutes": zod.number().nullish(),
   "activeSessionCurrentCost": zod.number().nullish()
@@ -115,6 +116,7 @@ export const UpdateCourtResponse = zod.object({
   "hourlyRate": zod.number(),
   "status": zod.enum(['idle', 'active']),
   "activeSessionId": zod.number().nullish(),
+  "activeSessionCustomerName": zod.string().nullish(),
   "activeSessionStartedAt": zod.string().nullish(),
   "activeSessionElapsedMinutes": zod.number().nullish(),
   "activeSessionCurrentCost": zod.number().nullish()
@@ -145,6 +147,7 @@ export const GetSessionsResponseItem = zod.object({
   "id": zod.number(),
   "courtId": zod.number(),
   "courtName": zod.string(),
+  "customerName": zod.string().nullish(),
   "startedAt": zod.string(),
   "endedAt": zod.string().nullish(),
   "durationMinutes": zod.number().nullish(),
@@ -159,6 +162,7 @@ export const GetSessionsResponse = zod.array(GetSessionsResponseItem)
  */
 export const CreateSessionBody = zod.object({
   "courtId": zod.number(),
+  "customerName": zod.string().nullish(),
   "presetMinutes": zod.number().nullish()
 })
 
@@ -174,6 +178,7 @@ export const GetSessionResponse = zod.object({
   "id": zod.number(),
   "courtId": zod.number(),
   "courtName": zod.string(),
+  "customerName": zod.string().nullish(),
   "startedAt": zod.string(),
   "endedAt": zod.string().nullish(),
   "durationMinutes": zod.number().nullish(),
@@ -205,6 +210,7 @@ export const EndSessionResponse = zod.object({
   "id": zod.number(),
   "courtId": zod.number(),
   "courtName": zod.string(),
+  "customerName": zod.string().nullish(),
   "startedAt": zod.string(),
   "endedAt": zod.string().nullish(),
   "durationMinutes": zod.number().nullish(),
@@ -320,6 +326,7 @@ export const GetReportSummaryResponse = zod.object({
   "id": zod.number(),
   "courtId": zod.number(),
   "courtName": zod.string(),
+  "customerName": zod.string().nullish(),
   "startedAt": zod.string(),
   "endedAt": zod.string().nullish(),
   "durationMinutes": zod.number().nullish(),

@@ -17,6 +17,7 @@ function formatSession(session: typeof sessionsTable.$inferSelect, courtName: st
     id: session.id,
     courtId: session.courtId,
     courtName,
+    customerName: session.customerName ?? null,
     startedAt: session.startedAt.toISOString(),
     endedAt: session.endedAt ? session.endedAt.toISOString() : null,
     durationMinutes: session.durationMinutes ? parseFloat(session.durationMinutes) : null,
@@ -82,6 +83,7 @@ router.post("/sessions", requireAuth, async (req, res): Promise<void> => {
     .insert(sessionsTable)
     .values({
       courtId,
+      customerName: parsed.data.customerName ?? null,
       startedAt: new Date(),
     })
     .returning();

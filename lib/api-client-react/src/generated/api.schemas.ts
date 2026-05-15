@@ -26,7 +26,6 @@ export const LoginInputRole = {
 } as const;
 
 export interface LoginInput {
-  username: string;
   password: string;
   role: LoginInputRole;
 }
@@ -92,6 +91,8 @@ export interface Court {
   /** @nullable */
   activeSessionId?: number | null;
   /** @nullable */
+  activeSessionCustomerName?: string | null;
+  /** @nullable */
   activeSessionStartedAt?: string | null;
   /** @nullable */
   activeSessionElapsedMinutes?: number | null;
@@ -121,6 +122,8 @@ export interface Session {
   id: number;
   courtId: number;
   courtName: string;
+  /** @nullable */
+  customerName?: string | null;
   startedAt: string;
   /** @nullable */
   endedAt?: string | null;
@@ -133,6 +136,8 @@ export interface Session {
 
 export interface SessionInput {
   courtId: number;
+  /** @nullable */
+  customerName?: string | null;
   /** @nullable */
   presetMinutes?: number | null;
 }

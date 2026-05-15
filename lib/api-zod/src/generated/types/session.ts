@@ -11,6 +11,8 @@ export interface Session {
   id: number;
   courtId: number;
   courtName: string;
+  /** @nullable */
+  customerName?: string | null;
   startedAt: string;
   /** @nullable */
   endedAt?: string | null;

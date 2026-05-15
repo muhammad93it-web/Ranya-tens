@@ -15,6 +15,8 @@ export interface Court {
   /** @nullable */
   activeSessionId?: number | null;
   /** @nullable */
+  activeSessionCustomerName?: string | null;
+  /** @nullable */
   activeSessionStartedAt?: string | null;
   /** @nullable */
   activeSessionElapsedMinutes?: number | null;

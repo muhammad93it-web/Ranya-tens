@@ -20,26 +20,21 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     return;
   }
 
-  const { username, password, role } = parsed.data;
+  const { password, role } = parsed.data;
 
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.username, username));
+    .where(eq(usersTable.role, role));
 
   if (!user) {
-    res.status(401).json({ error: "ناوی بەکارهێنەر یان وشەی نهێنی هەڵەیە" });
-    return;
-  }
-
-  if (user.role !== role) {
-    res.status(401).json({ error: "رۆلی هەڵبژێردراو هەڵەیە" });
+    res.status(401).json({ error: "وشەی نهێنی هەڵەیە" });
     return;
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) {
-    res.status(401).json({ error: "ناوی بەکارهێنەر یان وشەی نهێنی هەڵەیە" });
+    res.status(401).json({ error: "وشەی نهێنی هەڵەیە" });
     return;
   }
 

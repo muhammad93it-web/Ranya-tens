@@ -189,7 +189,7 @@ export default function SettingsPage() {
         {/* Store info */}
         <section className="bg-card border border-card-border rounded-2xl p-6">
           <h2 className="text-sm font-semibold text-foreground text-end mb-5 flex items-center justify-end gap-2 border-b border-border pb-3">
-            <span>زانیاری فرۆشگا</span>
+            <span>زانیاری سیستەمی تێنسی ڕانیە</span>
             <Store size={16} className="text-primary" />
           </h2>
           <div className="grid grid-cols-2 gap-4">
@@ -201,18 +201,11 @@ export default function SettingsPage() {
                 data-testid="input-phone" />
             </div>
             <div>
-              <label className="block text-xs text-muted-foreground text-end mb-1.5">ناوی فرۆشگا</label>
+              <label className="block text-xs text-muted-foreground text-end mb-1.5">ناوی سیستەم</label>
               <input type="text" value={form.shopName ?? ""}
                 onChange={(e) => patch("shopName", e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-muted/30 border border-input text-foreground text-end focus:outline-none focus:ring-2 focus:ring-primary/30"
-                data-testid="input-shop-name" />
-            </div>
-            <div className="col-span-2">
-              <label className="block text-xs text-muted-foreground text-end mb-1.5">مارکێتی نەستڕە</label>
-              <input type="text" value={form.marketCategory ?? ""}
-                onChange={(e) => patch("marketCategory", e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-muted/30 border border-input text-foreground text-end focus:outline-none focus:ring-2 focus:ring-primary/30"
-                data-testid="input-market" />
+                data-testid="input-system-name" />
             </div>
             <div className="col-span-2">
               <label className="block text-xs text-muted-foreground text-end mb-1.5">ناونیشان</label>

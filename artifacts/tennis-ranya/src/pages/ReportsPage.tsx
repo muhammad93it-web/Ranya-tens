@@ -209,11 +209,11 @@ export default function ReportsPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">کۆی نرخ</th>
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">ماوە</th>
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">ناوی کەس</th>
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">میز</th>
               <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">بەروار و کات</th>
+              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">میز</th>
+              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">ناوی کەس</th>
+              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">ماوە</th>
+              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">کۆی نرخ</th>
             </tr>
           </thead>
           <tbody>
@@ -223,8 +223,8 @@ export default function ReportsPage() {
               <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground text-sm">هیچ یاریێک نییە لەم بەرواردا</td></tr>
             ) : (data?.sessions as Session[] ?? []).map((s) => (
               <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/10 transition-colors">
-                <td className="px-4 py-3 text-end text-primary font-medium">{s.totalCost?.toFixed(0) ?? "---"} د.ع</td>
-                <td className="px-4 py-3 text-end text-foreground">{formatDuration(s.durationMinutes)}</td>
+                <td className="px-4 py-3 text-end text-muted-foreground text-sm">{formatDateTime(s.startedAt)}</td>
+                <td className="px-4 py-3 text-end text-foreground">{s.courtName}</td>
                 <td className="px-4 py-3 text-end">
                   {s.customerName ? (
                     <span className="text-amber-400 font-medium">{s.customerName}</span>
@@ -232,8 +232,8 @@ export default function ReportsPage() {
                     <span className="text-muted-foreground/60 text-xs">—</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-end text-foreground">{s.courtName}</td>
-                <td className="px-4 py-3 text-end text-muted-foreground text-sm">{formatDateTime(s.startedAt)}</td>
+                <td className="px-4 py-3 text-end text-foreground">{formatDuration(s.durationMinutes)}</td>
+                <td className="px-4 py-3 text-end text-primary font-medium">{s.totalCost?.toFixed(0) ?? "---"} د.ع</td>
               </tr>
             ))}
           </tbody>
@@ -249,10 +249,10 @@ export default function ReportsPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">بڕ</th>
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">جۆر</th>
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">ناونیشان</th>
               <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">بەروار</th>
+              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">ناونیشان</th>
+              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">جۆر</th>
+              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">بڕ</th>
             </tr>
           </thead>
           <tbody>
@@ -262,10 +262,10 @@ export default function ReportsPage() {
               <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground text-sm">هیچ خەرجیێک نییە</td></tr>
             ) : (data?.expenses as Expense[] ?? []).map((e) => (
               <tr key={e.id} className="border-b border-border last:border-0 hover:bg-muted/10 transition-colors">
-                <td className="px-4 py-3 text-end text-destructive font-medium">{e.amount.toFixed(0)} د.ع</td>
-                <td className="px-4 py-3 text-end text-foreground">{e.type}</td>
-                <td className="px-4 py-3 text-end text-foreground">{e.title || "—"}</td>
                 <td className="px-4 py-3 text-end text-muted-foreground text-sm">{e.date}</td>
+                <td className="px-4 py-3 text-end text-foreground">{e.title || "—"}</td>
+                <td className="px-4 py-3 text-end text-foreground">{e.type}</td>
+                <td className="px-4 py-3 text-end text-destructive font-medium">{e.amount.toFixed(0)} د.ع</td>
               </tr>
             ))}
           </tbody>

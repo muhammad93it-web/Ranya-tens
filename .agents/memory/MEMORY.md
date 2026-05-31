@@ -1,0 +1,1 @@
+- [RTL Tailwind alignment](rtl-tailwind-alignment.md) — RTL doc: text-end/justify-end = LEFT, flex-row-reverse = LTR; "put on right" = text-start/justify-start.

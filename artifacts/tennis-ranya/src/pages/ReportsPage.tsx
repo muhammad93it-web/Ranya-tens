@@ -22,7 +22,7 @@ interface Expense {
   date: string;
 }
 
-type Preset = "daily" | "weekly" | "monthly" | "previous" | "custom";
+type Preset = "today" | "yesterday" | "month" | "lastMonth" | "all";
 
 function localToday(): { yyyy: number; mm: number; dd: number } {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -45,41 +45,36 @@ function computeRange(preset: Preset): { start: string; end: string } {
     return `${y}-${m}-${day}`;
   };
 
-  if (preset === "daily") {
+  if (preset === "today") {
     const today = iso(new Date(yyyy, mm, dd));
     return { start: today, end: today };
   }
-  if (preset === "weekly") {
-    const end = new Date(yyyy, mm, dd);
-    const start = new Date(yyyy, mm, dd - 6);
-    return { start: iso(start), end: iso(end) };
+  if (preset === "yesterday") {
+    const y = iso(new Date(yyyy, mm, dd - 1));
+    return { start: y, end: y };
   }
-  if (preset === "monthly") {
+  if (preset === "month") {
     const start = new Date(yyyy, mm, 1);
     const end = new Date(yyyy, mm + 1, 0);
     return { start: iso(start), end: iso(end) };
   }
-  if (preset === "previous") {
+  if (preset === "lastMonth") {
     const start = new Date(yyyy, mm - 1, 1);
     const end = new Date(yyyy, mm, 0);
     return { start: iso(start), end: iso(end) };
   }
-  const today = iso(new Date(yyyy, mm, dd));
-  return { start: today, end: today };
+  // all: from the very beginning of records until today
+  return { start: "2000-01-01", end: iso(new Date(yyyy, mm, dd)) };
 }
 
 export default function ReportsPage() {
   const { user } = useUser();
   const isCashier = user?.role === "cashier";
 
-  const [preset, setPreset] = useState<Preset>("daily");
-  const todayRange = useMemo(() => computeRange("daily"), []);
-  const [customStart, setCustomStart] = useState(todayRange.start);
-  const [customEnd, setCustomEnd] = useState(todayRange.end);
+  const [preset, setPreset] = useState<Preset>("today");
+  const todayRange = useMemo(() => computeRange("today"), []);
 
-  const range = preset === "custom"
-    ? { start: customStart, end: customEnd }
-    : computeRange(preset);
+  const range = computeRange(preset);
 
   // Cashier locked to today
   const effective = isCashier ? todayRange : range;
@@ -105,16 +100,16 @@ export default function ReportsPage() {
   }
 
   const presetBtns: { key: Preset; label: string }[] = [
-    { key: "daily", label: "ڕۆژانە" },
-    { key: "weekly", label: "هەفتانە" },
-    { key: "monthly", label: "مانگانە" },
-    { key: "previous", label: "مانگی ڕابردوو" },
-    { key: "custom", label: "دیاریکراو" },
+    { key: "today", label: "ئەمڕۆ" },
+    { key: "yesterday", label: "دوێنێ" },
+    { key: "month", label: "ئەم مانگە" },
+    { key: "lastMonth", label: "مانگی ڕابردوو" },
+    { key: "all", label: "هەمووی" },
   ];
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-foreground text-end mb-6 flex items-center justify-end gap-2">
+      <h1 className="text-xl font-bold text-foreground text-start mb-6 flex items-center justify-start gap-2">
         <span>ڕاپۆرتەکان</span>
         <BarChart3 className="text-primary" size={22} />
       </h1>
@@ -122,7 +117,7 @@ export default function ReportsPage() {
       {/* Preset filter buttons */}
       {!isCashier && (
         <div className="bg-card border border-card-border rounded-2xl p-4 mb-4">
-          <div className="flex gap-2 flex-row-reverse flex-wrap">
+          <div className="flex gap-2 flex-wrap">
             {presetBtns.map((b) => (
               <button
                 key={b.key}
@@ -138,27 +133,13 @@ export default function ReportsPage() {
               </button>
             ))}
           </div>
-          {preset === "custom" && (
-            <div className="flex gap-4 items-end flex-row-reverse mt-4 pt-4 border-t border-border">
-              <div className="flex-1">
-                <label className="block text-xs text-muted-foreground text-end mb-1">بەرواری دەستپێک</label>
-                <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-muted/30 border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-testid="input-start-date" />
-              </div>
-              <div className="flex-1">
-                <label className="block text-xs text-muted-foreground text-end mb-1">بەرواری کۆتایی</label>
-                <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-muted/30 border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-testid="input-end-date" />
-              </div>
-            </div>
-          )}
-          <div className="text-end text-xs text-muted-foreground mt-3">
+          <div className="text-start text-xs text-muted-foreground mt-3">
             {effective.start} → {effective.end}
           </div>
         </div>
       )}
       {isCashier && (
-        <div className="bg-card border border-card-border rounded-2xl p-4 mb-4 text-end text-sm text-muted-foreground">
+        <div className="bg-card border border-card-border rounded-2xl p-4 mb-4 text-start text-sm text-muted-foreground">
           ڕاپۆرتی ئەمڕۆ • {effective.start}
         </div>
       )}
@@ -202,18 +183,18 @@ export default function ReportsPage() {
 
       {/* Sessions table */}
       <div className="bg-card border border-card-border rounded-2xl overflow-hidden mb-6">
-        <div className="px-5 py-4 border-b border-border flex items-center justify-end gap-2">
-          <h2 className="text-sm font-semibold text-foreground text-end">یارییەکانی تێپەڕوو</h2>
+        <div className="px-5 py-4 border-b border-border flex items-center justify-start gap-2">
+          <h2 className="text-sm font-semibold text-foreground text-start">یارییەکانی تێپەڕوو</h2>
           <BarChart3 size={16} className="text-primary" />
         </div>
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">بەروار و کات</th>
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">میز</th>
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">ناوی کەس</th>
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">ماوە</th>
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">کۆی نرخ</th>
+              <th className="px-4 py-3 text-start text-xs font-semibold text-muted-foreground">بەروار و کات</th>
+              <th className="px-4 py-3 text-start text-xs font-semibold text-muted-foreground">میز</th>
+              <th className="px-4 py-3 text-start text-xs font-semibold text-muted-foreground">ناوی کەس</th>
+              <th className="px-4 py-3 text-start text-xs font-semibold text-muted-foreground">ماوە</th>
+              <th className="px-4 py-3 text-start text-xs font-semibold text-muted-foreground">کۆی نرخ</th>
             </tr>
           </thead>
           <tbody>
@@ -223,17 +204,17 @@ export default function ReportsPage() {
               <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground text-sm">هیچ یاریێک نییە لەم بەرواردا</td></tr>
             ) : (data?.sessions as Session[] ?? []).map((s) => (
               <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/10 transition-colors">
-                <td className="px-4 py-3 text-end text-muted-foreground text-sm">{formatDateTime(s.startedAt)}</td>
-                <td className="px-4 py-3 text-end text-foreground">{s.courtName}</td>
-                <td className="px-4 py-3 text-end">
+                <td className="px-4 py-3 text-start text-muted-foreground text-sm">{formatDateTime(s.startedAt)}</td>
+                <td className="px-4 py-3 text-start text-foreground">{s.courtName}</td>
+                <td className="px-4 py-3 text-start">
                   {s.customerName ? (
                     <span className="text-amber-400 font-medium">{s.customerName}</span>
                   ) : (
                     <span className="text-muted-foreground/60 text-xs">—</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-end text-foreground">{formatDuration(s.durationMinutes)}</td>
-                <td className="px-4 py-3 text-end text-primary font-medium">{s.totalCost?.toFixed(0) ?? "---"} د.ع</td>
+                <td className="px-4 py-3 text-start text-foreground">{formatDuration(s.durationMinutes)}</td>
+                <td className="px-4 py-3 text-start text-primary font-medium">{s.totalCost?.toFixed(0) ?? "---"} د.ع</td>
               </tr>
             ))}
           </tbody>
@@ -242,17 +223,17 @@ export default function ReportsPage() {
 
       {/* Expenses table */}
       <div className="bg-card border border-card-border rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-border flex items-center justify-end gap-2">
-          <h2 className="text-sm font-semibold text-foreground text-end">خەرجییەکان لەم ماوەیە</h2>
+        <div className="px-5 py-4 border-b border-border flex items-center justify-start gap-2">
+          <h2 className="text-sm font-semibold text-foreground text-start">خەرجییەکان لەم ماوەیە</h2>
           <Receipt size={16} className="text-destructive" />
         </div>
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">بەروار</th>
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">ناونیشان</th>
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">جۆر</th>
-              <th className="px-4 py-3 text-end text-xs font-semibold text-muted-foreground">بڕ</th>
+              <th className="px-4 py-3 text-start text-xs font-semibold text-muted-foreground">بەروار</th>
+              <th className="px-4 py-3 text-start text-xs font-semibold text-muted-foreground">ناونیشان</th>
+              <th className="px-4 py-3 text-start text-xs font-semibold text-muted-foreground">جۆر</th>
+              <th className="px-4 py-3 text-start text-xs font-semibold text-muted-foreground">بڕ</th>
             </tr>
           </thead>
           <tbody>
@@ -262,10 +243,10 @@ export default function ReportsPage() {
               <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground text-sm">هیچ خەرجیێک نییە</td></tr>
             ) : (data?.expenses as Expense[] ?? []).map((e) => (
               <tr key={e.id} className="border-b border-border last:border-0 hover:bg-muted/10 transition-colors">
-                <td className="px-4 py-3 text-end text-muted-foreground text-sm">{e.date}</td>
-                <td className="px-4 py-3 text-end text-foreground">{e.title || "—"}</td>
-                <td className="px-4 py-3 text-end text-foreground">{e.type}</td>
-                <td className="px-4 py-3 text-end text-destructive font-medium">{e.amount.toFixed(0)} د.ع</td>
+                <td className="px-4 py-3 text-start text-muted-foreground text-sm">{e.date}</td>
+                <td className="px-4 py-3 text-start text-foreground">{e.title || "—"}</td>
+                <td className="px-4 py-3 text-start text-foreground">{e.type}</td>
+                <td className="px-4 py-3 text-start text-destructive font-medium">{e.amount.toFixed(0)} د.ع</td>
               </tr>
             ))}
           </tbody>

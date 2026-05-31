@@ -12,6 +12,7 @@ import CourtsPage from "@/pages/CourtsPage";
 import ReportsPage from "@/pages/ReportsPage";
 import ExpensesPage from "@/pages/ExpensesPage";
 import UsersPage from "@/pages/UsersPage";
+import WinnersPage from "@/pages/WinnersPage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotFound from "@/pages/not-found";
 
@@ -85,6 +86,7 @@ function Router() {
       <Route path="/courts" component={() => <ProtectedRoute component={CourtsPage} adminOnly />} />
       <Route path="/reports" component={() => <ProtectedRoute component={ReportsPage} />} />
       <Route path="/expenses" component={() => <ProtectedRoute component={ExpensesPage} />} />
+      <Route path="/winners" component={() => <ProtectedRoute component={WinnersPage} />} />
       <Route path="/users" component={() => <ProtectedRoute component={UsersPage} adminOnly />} />
       <Route path="/settings" component={() => <ProtectedRoute component={SettingsPage} adminOnly />} />
       <Route component={NotFound} />

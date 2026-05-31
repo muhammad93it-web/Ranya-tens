@@ -11,12 +11,13 @@ import {
   LogOut,
   Trophy,
   Map,
+  Award,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useGetSettings, getGetSettingsQueryKey } from "@workspace/api-client-react";
 
-const DEFAULT_PERMISSIONS = ["/map", "/dashboard", "/times", "/reports", "/expenses"];
+const DEFAULT_PERMISSIONS = ["/map", "/dashboard", "/times", "/reports", "/expenses", "/winners"];
 
 interface NavItem {
   path: string;
@@ -32,6 +33,7 @@ const navItems: NavItem[] = [
   { path: "/courts", label: "بەڕێوەبردنی میزەکان", icon: <Table2 size={18} />, adminOnly: true },
   { path: "/reports", label: "ڕاپۆرتەکان", icon: <BarChart3 size={18} /> },
   { path: "/expenses", label: "خەرجییەکان", icon: <Receipt size={18} /> },
+  { path: "/winners", label: "بەشی فایزەکان", icon: <Award size={18} /> },
   { path: "/users", label: "بەکارهێنەران", icon: <Users size={18} />, adminOnly: true },
   { path: "/settings", label: "ڕێکخستنەکان", icon: <Settings size={18} />, adminOnly: true },
 ];

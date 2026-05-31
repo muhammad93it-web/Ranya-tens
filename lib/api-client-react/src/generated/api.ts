@@ -47,7 +47,10 @@ import type {
   TimePresetUpdate,
   User,
   UserInput,
-  UserUpdate
+  UserUpdate,
+  Winner,
+  WinnerInput,
+  WinnerUpdate
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1609,6 +1612,296 @@ export const useSendTelegramReport = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getSendTelegramReportMutationOptions(options));
+    }
+
+export const getGetWinnersUrl = () => {
+
+
+
+
+  return `/api/winners`
+}
+
+/**
+ * @summary Get all winner entries
+ */
+export const getWinners = async ( options?: RequestInit): Promise<Winner[]> => {
+
+  return customFetch<Winner[]>(getGetWinnersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetWinnersQueryKey = () => {
+    return [
+    `/api/winners`
+    ] as const;
+    }
+
+
+export const getGetWinnersQueryOptions = <TData = Awaited<ReturnType<typeof getWinners>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWinners>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetWinnersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWinners>>> = ({ signal }) => getWinners({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWinners>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetWinnersQueryResult = NonNullable<Awaited<ReturnType<typeof getWinners>>>
+export type GetWinnersQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get all winner entries
+ */
+
+export function useGetWinners<TData = Awaited<ReturnType<typeof getWinners>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWinners>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetWinnersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateWinnerUrl = () => {
+
+
+
+
+  return `/api/winners`
+}
+
+/**
+ * @summary Create a winner entry
+ */
+export const createWinner = async (winnerInput: WinnerInput, options?: RequestInit): Promise<Winner> => {
+
+  return customFetch<Winner>(getCreateWinnerUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      winnerInput,)
+  }
+);}
+
+
+
+
+export const getCreateWinnerMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWinner>>, TError,{data: BodyType<WinnerInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createWinner>>, TError,{data: BodyType<WinnerInput>}, TContext> => {
+
+const mutationKey = ['createWinner'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createWinner>>, {data: BodyType<WinnerInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createWinner(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateWinnerMutationResult = NonNullable<Awaited<ReturnType<typeof createWinner>>>
+    export type CreateWinnerMutationBody = BodyType<WinnerInput>
+    export type CreateWinnerMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a winner entry
+ */
+export const useCreateWinner = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWinner>>, TError,{data: BodyType<WinnerInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createWinner>>,
+        TError,
+        {data: BodyType<WinnerInput>},
+        TContext
+      > => {
+      return useMutation(getCreateWinnerMutationOptions(options));
+    }
+
+export const getUpdateWinnerUrl = (id: number,) => {
+
+
+
+
+  return `/api/winners/${id}`
+}
+
+/**
+ * @summary Update a winner entry
+ */
+export const updateWinner = async (id: number,
+    winnerUpdate: WinnerUpdate, options?: RequestInit): Promise<Winner> => {
+
+  return customFetch<Winner>(getUpdateWinnerUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      winnerUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateWinnerMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWinner>>, TError,{id: number;data: BodyType<WinnerUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateWinner>>, TError,{id: number;data: BodyType<WinnerUpdate>}, TContext> => {
+
+const mutationKey = ['updateWinner'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateWinner>>, {id: number;data: BodyType<WinnerUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateWinner(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateWinnerMutationResult = NonNullable<Awaited<ReturnType<typeof updateWinner>>>
+    export type UpdateWinnerMutationBody = BodyType<WinnerUpdate>
+    export type UpdateWinnerMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Update a winner entry
+ */
+export const useUpdateWinner = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWinner>>, TError,{id: number;data: BodyType<WinnerUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateWinner>>,
+        TError,
+        {id: number;data: BodyType<WinnerUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateWinnerMutationOptions(options));
+    }
+
+export const getDeleteWinnerUrl = (id: number,) => {
+
+
+
+
+  return `/api/winners/${id}`
+}
+
+/**
+ * @summary Delete a winner entry
+ */
+export const deleteWinner = async (id: number, options?: RequestInit): Promise<SuccessResponse> => {
+
+  return customFetch<SuccessResponse>(getDeleteWinnerUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteWinnerMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteWinner>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteWinner>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteWinner'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteWinner>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteWinner(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteWinnerMutationResult = NonNullable<Awaited<ReturnType<typeof deleteWinner>>>
+
+    export type DeleteWinnerMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a winner entry
+ */
+export const useDeleteWinner = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteWinner>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteWinner>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteWinnerMutationOptions(options));
     }
 
 export const getResetSystemUrl = () => {

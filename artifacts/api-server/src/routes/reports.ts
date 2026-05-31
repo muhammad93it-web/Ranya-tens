@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, sessionsTable, courtsTable, expensesTable } from "@workspace/db";
+import { db, sessionsTable, courtsTable, expensesTable, winnersTable } from "@workspace/db";
 import { eq, and, sql } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth";
 import { APP_TIMEZONE, todayLocal } from "../lib/date";
@@ -46,10 +46,26 @@ router.get("/reports/summary", requireAuth, async (req, res): Promise<void> => {
     )
     .orderBy(sql`${expensesTable.date} DESC, ${expensesTable.id} DESC`);
 
-  const totalIncome = sessionRows.reduce(
+  const winnerRows = await db
+    .select()
+    .from(winnersTable)
+    .where(
+      and(
+        eq(winnersTable.counted, true),
+        sql`${winnersTable.date} >= ${filterStart}`,
+        sql`${winnersTable.date} <= ${filterEnd}`,
+      ),
+    );
+
+  const sessionsIncome = sessionRows.reduce(
     (sum, r) => sum + (r.session.totalCost ? parseFloat(r.session.totalCost) : 0),
     0,
   );
+  const winnersIncome = winnerRows.reduce(
+    (sum, w) => sum + parseFloat(w.amount),
+    0,
+  );
+  const totalIncome = sessionsIncome + winnersIncome;
   const totalExpenses = expenseRows.reduce(
     (sum, e) => sum + parseFloat(e.amount),
     0,
@@ -88,7 +104,7 @@ router.get("/reports/summary", requireAuth, async (req, res): Promise<void> => {
 router.get("/reports/dashboard", requireAuth, async (_req, res): Promise<void> => {
   const today = todayLocal();
 
-  const [activeSessions, todaySessions] = await Promise.all([
+  const [activeSessions, todaySessions, todayWinners] = await Promise.all([
     db
       .select()
       .from(sessionsTable)
@@ -102,14 +118,25 @@ router.get("/reports/dashboard", requireAuth, async (_req, res): Promise<void> =
           sql`DATE(${sessionsTable.startedAt} AT TIME ZONE ${APP_TIMEZONE}) = ${today}`,
         ),
       ),
+    db
+      .select()
+      .from(winnersTable)
+      .where(
+        and(
+          eq(winnersTable.counted, true),
+          sql`${winnersTable.date} = ${today}`,
+        ),
+      ),
   ]);
 
   const totalCourts = await db.select().from(courtsTable);
 
-  const todayIncome = todaySessions.reduce(
-    (sum, s) => sum + (s.totalCost ? parseFloat(s.totalCost) : 0),
-    0,
-  );
+  const todayIncome =
+    todaySessions.reduce(
+      (sum, s) => sum + (s.totalCost ? parseFloat(s.totalCost) : 0),
+      0,
+    ) +
+    todayWinners.reduce((sum, w) => sum + parseFloat(w.amount), 0);
 
   const totalActiveCourts = activeSessions.length;
   const totalIdleCourts = totalCourts.length - totalActiveCourts;

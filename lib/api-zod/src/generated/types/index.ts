@@ -40,3 +40,6 @@ export * from './userInputRole';
 export * from './userRole';
 export * from './userUpdate';
 export * from './userUpdateRole';
+export * from './winner';
+export * from './winnerInput';
+export * from './winnerUpdate';

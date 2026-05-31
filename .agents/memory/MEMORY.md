@@ -1,1 +1,2 @@
 - [RTL Tailwind alignment](rtl-tailwind-alignment.md) — RTL doc: text-end/justify-end = LEFT, flex-row-reverse = LTR; "put on right" = text-start/justify-start.
+- [Drizzle push is interactive](drizzle-push-interactive.md) — drizzle-kit push hangs on TTY prompts here; add tables via raw SQL (executeSql) + schema file instead.

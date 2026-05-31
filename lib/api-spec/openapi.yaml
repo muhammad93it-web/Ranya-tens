@@ -415,6 +415,86 @@ paths:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
 
+  /winners:
+    get:
+      operationId: getWinners
+      tags: [winners]
+      summary: Get all winner entries
+      responses:
+        "200":
+          description: List of winner entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Winner"
+    post:
+      operationId: createWinner
+      tags: [winners]
+      summary: Create a winner entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WinnerInput"
+      responses:
+        "201":
+          description: Winner entry created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Winner"
+
+  /winners/{id}:
+    patch:
+      operationId: updateWinner
+      tags: [winners]
+      summary: Update a winner entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WinnerUpdate"
+      responses:
+        "200":
+          description: Updated winner entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Winner"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteWinner
+      tags: [winners]
+      summary: Delete a winner entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   /system/reset:
     post:
       operationId: resetSystem
@@ -836,6 +916,49 @@ components:
           type: ["string", "null"]
         presetMinutes:
           type: ["integer", "null"]
+
+    Winner:
+      type: object
+      required: [id, name, sets, amount, counted, date]
+      properties:
+        id:
+          type: integer
+        name:
+          type: ["string", "null"]
+        sets:
+          type: integer
+        amount:
+          type: number
+        counted:
+          type: boolean
+        date:
+          type: string
+
+    WinnerInput:
+      type: object
+      properties:
+        name:
+          type: ["string", "null"]
+        sets:
+          type: integer
+        amount:
+          type: number
+        counted:
+          type: boolean
+        date:
+          type: string
+
+    WinnerUpdate:
+      type: object
+      properties:
+        name:
+          type: ["string", "null"]
+        sets:
+          type: integer
+        amount:
+          type: number
+        counted:
+          type: boolean
 
     Expense:
       type: object

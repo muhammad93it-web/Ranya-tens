@@ -161,6 +161,33 @@ export interface SessionInput {
   presetMinutes?: number | null;
 }
 
+export interface Winner {
+  id: number;
+  /** @nullable */
+  name: string | null;
+  sets: number;
+  amount: number;
+  counted: boolean;
+  date: string;
+}
+
+export interface WinnerInput {
+  /** @nullable */
+  name?: string | null;
+  sets?: number;
+  amount?: number;
+  counted?: boolean;
+  date?: string;
+}
+
+export interface WinnerUpdate {
+  /** @nullable */
+  name?: string | null;
+  sets?: number;
+  amount?: number;
+  counted?: boolean;
+}
+
 export interface Expense {
   id: number;
   /** @nullable */

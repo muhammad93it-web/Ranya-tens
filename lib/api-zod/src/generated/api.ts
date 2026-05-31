@@ -307,6 +307,68 @@ export const SendTelegramReportResponse = zod.object({
 
 
 /**
+ * @summary Get all winner entries
+ */
+export const GetWinnersResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string().nullable(),
+  "sets": zod.number(),
+  "amount": zod.number(),
+  "counted": zod.boolean(),
+  "date": zod.string()
+})
+export const GetWinnersResponse = zod.array(GetWinnersResponseItem)
+
+
+/**
+ * @summary Create a winner entry
+ */
+export const CreateWinnerBody = zod.object({
+  "name": zod.string().nullish(),
+  "sets": zod.number().optional(),
+  "amount": zod.number().optional(),
+  "counted": zod.boolean().optional(),
+  "date": zod.string().optional()
+})
+
+
+/**
+ * @summary Update a winner entry
+ */
+export const UpdateWinnerParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateWinnerBody = zod.object({
+  "name": zod.string().nullish(),
+  "sets": zod.number().optional(),
+  "amount": zod.number().optional(),
+  "counted": zod.boolean().optional()
+})
+
+export const UpdateWinnerResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string().nullable(),
+  "sets": zod.number(),
+  "amount": zod.number(),
+  "counted": zod.boolean(),
+  "date": zod.string()
+})
+
+
+/**
+ * @summary Delete a winner entry
+ */
+export const DeleteWinnerParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteWinnerResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
  * @summary Delete all sessions and expenses, reset courts to idle (admin only)
  */
 export const ResetSystemResponse = zod.object({

@@ -22,7 +22,7 @@ interface Expense {
   date: string;
 }
 
-type Preset = "today" | "yesterday" | "month" | "lastMonth" | "all";
+type Preset = "today" | "yesterday" | "month" | "nextMonth" | "all";
 
 function localToday(): { yyyy: number; mm: number; dd: number } {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -58,9 +58,9 @@ function computeRange(preset: Preset): { start: string; end: string } {
     const end = new Date(yyyy, mm + 1, 0);
     return { start: iso(start), end: iso(end) };
   }
-  if (preset === "lastMonth") {
-    const start = new Date(yyyy, mm - 1, 1);
-    const end = new Date(yyyy, mm, 0);
+  if (preset === "nextMonth") {
+    const start = new Date(yyyy, mm + 1, 1);
+    const end = new Date(yyyy, mm + 2, 0);
     return { start: iso(start), end: iso(end) };
   }
   // all: from the very beginning of records until today
@@ -103,7 +103,7 @@ export default function ReportsPage() {
     { key: "today", label: "ئەمڕۆ" },
     { key: "yesterday", label: "دوێنێ" },
     { key: "month", label: "ئەم مانگە" },
-    { key: "lastMonth", label: "مانگی ڕابردوو" },
+    { key: "nextMonth", label: "مانگی داهاتوو" },
     { key: "all", label: "هەمووی" },
   ];
 

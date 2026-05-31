@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, settingsTable } from "@workspace/db";
+import { db, settingsTable, sessionsTable, expensesTable, courtsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { UpdateSettingsBody, SendTelegramReportBody } from "@workspace/api-zod";
 import { requireAuth, requireAdmin } from "../middlewares/auth";
@@ -82,6 +82,16 @@ router.post("/telegram/send-report", requireAuth, requireAdmin, async (req, res)
     res.status(502).json({ error: result.description ?? "نەنێردرا بۆ تێلێگرام" });
     return;
   }
+  res.json({ success: true });
+});
+
+router.post("/system/reset", requireAuth, requireAdmin, async (req, res): Promise<void> => {
+  await db.transaction(async (tx) => {
+    await tx.delete(sessionsTable);
+    await tx.delete(expensesTable);
+    await tx.update(courtsTable).set({ status: "idle" });
+  });
+  req.log.info("system data reset by admin");
   res.json({ success: true });
 });
 

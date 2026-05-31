@@ -415,6 +415,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
 
+  /system/reset:
+    post:
+      operationId: resetSystem
+      tags: [settings]
+      summary: Delete all sessions and expenses, reset courts to idle (admin only)
+      responses:
+        "200":
+          description: System data reset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   /users:
     get:
       operationId: getUsers

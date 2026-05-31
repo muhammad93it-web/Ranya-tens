@@ -307,6 +307,14 @@ export const SendTelegramReportResponse = zod.object({
 
 
 /**
+ * @summary Delete all sessions and expenses, reset courts to idle (admin only)
+ */
+export const ResetSystemResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
  * @summary Get all users (admin only)
  */
 export const GetUsersResponseItem = zod.object({

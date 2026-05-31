@@ -3,12 +3,13 @@ import {
   useGetSettings,
   useUpdateSettings,
   useSendTelegramReport,
+  useResetSystem,
   getGetSettingsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Settings as SettingsIcon, Save, Store, Palette, Send, Plus, Minus, X,
-  Type as TypeIcon,
+  Type as TypeIcon, AlertTriangle, Trash2, RotateCcw,
 } from "lucide-react";
 import { toEnglishDigits } from "@/lib/digits";
 
@@ -82,6 +83,7 @@ export default function SettingsPage() {
   const { data: settings, isLoading } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
   const updateSettings = useUpdateSettings();
   const sendTelegram = useSendTelegramReport();
+  const resetSystem = useResetSystem();
 
   const [form, setForm] = useState<SettingsData | null>(null);
   const [saved, setSaved] = useState(false);
@@ -89,6 +91,23 @@ export default function SettingsPage() {
   const [sendStart, setSendStart] = useState("");
   const [sendEnd, setSendEnd] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [resetMsg, setResetMsg] = useState<string | null>(null);
+
+  function handleReset() {
+    resetSystem.mutate(undefined, {
+      onSuccess: () => {
+        setConfirmReset(false);
+        setResetMsg("سیستەم سفر کرایەوە ✓ — هەموو یاری و خەرجییەکان سڕانەوە");
+        queryClient.invalidateQueries();
+        setTimeout(() => setResetMsg(null), 5000);
+      },
+      onError: () => {
+        setResetMsg("هەڵە لە سفرکردنەوەی سیستەم");
+        setTimeout(() => setResetMsg(null), 5000);
+      },
+    });
+  }
 
   useEffect(() => {
     if (settings) setForm(settings as SettingsData);
@@ -429,6 +448,55 @@ export default function SettingsPage() {
               {feedback}
             </div>
           )}
+        </section>
+
+        {/* Reset system */}
+        <section className="bg-card border border-destructive/40 rounded-2xl p-6">
+          <h2 className="text-sm font-semibold text-destructive text-end mb-5 flex items-center justify-end gap-2 border-b border-destructive/20 pb-3">
+            <span>سفرکردنەوەی سیستەم</span>
+            <AlertTriangle size={16} className="text-destructive" />
+          </h2>
+
+          <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+            <p className="text-sm font-semibold text-foreground text-end mb-1">سفرکردنەوەی هەموو حیسابات و ئیشەکان</p>
+            <p className="text-xs text-muted-foreground text-end mb-4 leading-relaxed">
+              هەموو یارییە تەواوبووەکان و خەرجییەکان دەسڕێنەوە و میزەکان دەگەڕێنەوە بۆ دۆخی چۆڵ. ڕێکخستنەکان، میزەکان و بەکارهێنەرەکان نامێننەوە. ئەمە بۆ ئەوەیە کاتێک سیستەمەکە بە بەڕێوەبەرێکی نوێ دەسپێریت، ڕاپۆرت و حیساباتەکان لە سفرەوە دەستپێبکەن. ئەم کردارە ناگەڕێتەوە.
+            </p>
+
+            {!confirmReset ? (
+              <div className="flex justify-end">
+                <button type="button" onClick={() => setConfirmReset(true)}
+                  className="px-4 py-2 rounded-xl bg-destructive text-white text-sm font-semibold flex items-center gap-2 hover:opacity-90"
+                  data-testid="button-reset-open">
+                  <Trash2 size={14} />
+                  <span>سفرکردنەوەی سیستەم</span>
+                </button>
+              </div>
+            ) : (
+              <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30">
+                <p className="text-sm font-semibold text-destructive text-end mb-3">دڵنیایت؟ هەموو داتای حیسابات بۆ هەمیشە دەسڕێتەوە و ناگەڕێتەوە.</p>
+                <div className="flex gap-2 justify-end">
+                  <button type="button" onClick={() => setConfirmReset(false)}
+                    className="px-4 py-2 rounded-xl bg-muted/40 text-foreground text-sm font-medium hover:bg-muted/60"
+                    data-testid="button-reset-cancel">
+                    پاشگەزبوونەوە
+                  </button>
+                  <button type="button" onClick={handleReset} disabled={resetSystem.isPending}
+                    className="px-4 py-2 rounded-xl bg-destructive text-white text-sm font-semibold flex items-center gap-2 hover:opacity-90 disabled:opacity-50"
+                    data-testid="button-reset-confirm">
+                    <RotateCcw size={14} />
+                    <span>{resetSystem.isPending ? "سفر دەکرێتەوە..." : "بەڵێ، سفری بکەرەوە"}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {resetMsg && (
+              <div className="mt-3 p-3 rounded-xl bg-card border border-border text-end text-sm text-foreground">
+                {resetMsg}
+              </div>
+            )}
+          </div>
         </section>
 
       </div>
